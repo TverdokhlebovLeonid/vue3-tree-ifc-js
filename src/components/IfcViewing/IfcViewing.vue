@@ -42,7 +42,7 @@ const modelLevels = ref<IModelLevels[]>([])
 const loadingIfc = ref()
 
 const loadIfc = async (url: string): Promise<void> => {
-  await ifcViewing.value?.IFC.setWasmPath('/wasm/')
+  await ifcViewing.value?.IFC.setWasmPath('../wasm/')
   model.value = await ifcViewing.value?.IFC.loadIfcUrl(url, true)
   await ifcViewing.value?.shadowDropper.renderShadow(model.value?.modelID as number)
   ifcViewing.value?.context.ifcCamera.cameraControls.saveState()
@@ -105,7 +105,7 @@ const setSpatialStructure = async (): Promise<void> => {
 }
 onMounted(() => {
   setStartIfcViewing()
-  loadIfc('/ifc/demo.ifc')
+  loadIfc('../ifc/demo.ifc')
 })
 
 const resetView = (): void => {
