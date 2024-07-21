@@ -29,5 +29,5 @@ coverage
 
 *.tsbuildinfo
 
-# auto-imports.d.ts
-# components.d.ts
+auto-imports.d.ts
+components.d.ts
