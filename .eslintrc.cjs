@@ -18,5 +18,6 @@ module.exports = {
     'no-console': ['warn', { allow: ['error'] }],
     'no-dupe-args': 'error',
     'no-dupe-else-if': 'error',
+    '@typescript-eslint/no-explicit-any': 'error',
   },
 }
