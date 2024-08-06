@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Snap shot component 1`] = `
+exports[`Snapshot component 1`] = `
 "<div data-v-b988461a="" class="ifc-tools">
   <div data-v-b988461a="" class="ifc-tools__cancel">
     <!--v-if-->

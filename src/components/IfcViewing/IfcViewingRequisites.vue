@@ -35,6 +35,7 @@ const setModel = (model: IModelLevels[]): void => {
 }
 defineExpose({
   setModel,
+  modelLevels,
 })
 
 const setElementName = (name: string): string => {
