@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Snap shot component 1`] = `
+"<div data-v-b988461a="" class="ifc-tools">
+  <div data-v-b988461a="" class="ifc-tools__cancel">
+    <!--v-if-->
+  </div>
+  <div data-v-b988461a="" class="ifc-tools__buttons"><button data-v-b988461a="" aria-disabled="false" type="button" class="el-button el-button--primary el-button--small is-plain ifc-tools__buttons_active el-tooltip__trigger el-tooltip__trigger"><i class="el-icon">
+        <coin></coin>
+      </i><span class="">Плоскость</span></button>
+    <!--teleport start-->
+    <!--teleport end--><button data-v-b988461a="" aria-disabled="false" type="button" class="el-button el-button--primary el-button--small is-plain el-tooltip__trigger"><i class="el-icon">
+        <coordinate></coordinate>
+      </i><span class="">Координаты</span></button>
+    <!--teleport start-->
+    <!--teleport end--><button data-v-b988461a="" aria-disabled="false" type="button" class="el-button el-button--primary el-button--small is-plain el-tooltip__trigger"><i class="el-icon">
+        <box></box>
+      </i><span class="">Куб</span></button>
+    <!--teleport start-->
+    <!--teleport end--><button data-v-b988461a="" aria-disabled="false" type="button" class="el-button el-button--primary el-button--small is-plain el-tooltip__trigger"><i class="el-icon">
+        <fullscreen></fullscreen>
+      </i><span class="">Во весь экран</span></button>
+    <!--teleport start-->
+    <!--teleport end-->
+  </div>
+</div>"
+`;

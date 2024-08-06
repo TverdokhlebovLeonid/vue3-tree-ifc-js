@@ -13,38 +13,48 @@ test('Should render', async () => {
       .find('.el-icon')
       .exists(),
   ).toBe(true)
+  const button = component.find('button')
+  await button.trigger('click')
+  expect(component.emitted('tool-selection')).toBeTruthy()
+})
+test('Snapshot component', async () => {
+  const component = mount(IfcViewingTools)
+  expect(component.html()).toMatchSnapshot()
 })
 
-test('function setTools', async () => {
+test('Function setTools', async () => {
   const component = mount(IfcViewingTools)
   component.vm.setTools(IFC_VIEWING_TOOLS.createPlane)
   expect(component.emitted('tool-selection')?.[0]).toEqual([IFC_VIEWING_TOOLS.createPlane])
+  expect(component.vm.activeTool).toBe(IFC_VIEWING_TOOLS.createPlane)
 })
-test('function setTools(fullScreen)', async () => {
+test('Function setTools(fullScreen)', async () => {
   const component = mount(IfcViewingTools)
   component.vm.setTools(IFC_VIEWING_TOOLS.fullScreen)
   expect(component.emitted('open-fullscreen')).toBeTruthy()
 })
-test('function setTools(same tool)', async () => {
+test('Function setTools(same tool)', async () => {
   const component = mount(IfcViewingTools)
   component.vm.activeTool = IFC_VIEWING_TOOLS.navCube
   component.vm.setTools(IFC_VIEWING_TOOLS.navCube)
   expect(component.emitted('tool-selection')?.[0]).toEqual([''])
+  expect(component.vm.activeTool).toBe('')
 })
 
-test('function startStateTools', async () => {
+test('Function startStateTools', async () => {
   const component = mount(IfcViewingTools)
   component.vm.startStateTools()
   expect(component.emitted('tool-selection')?.[0]).toEqual([''])
+  expect(component.vm.activeTool).toBe('')
 })
 
-test('function cancelTool', async () => {
+test('Function cancelTool', async () => {
   const component = mount(IfcViewingTools)
   component.vm.cancelTool()
   expect(component.emitted('tool-selection')?.[0]).toEqual([IFC_VIEWING_TOOLS.cancelPlane])
 })
 
-test('function setFullScreen', async () => {
+test('Function setFullScreen', async () => {
   const component = mount(IfcViewingTools)
   component.vm.setFullScreen()
   expect(component.emitted('open-fullscreen')).toBeTruthy()
