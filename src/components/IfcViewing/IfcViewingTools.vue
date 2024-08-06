@@ -45,7 +45,7 @@ const setFullScreen = (): void => {
   emits('open-fullscreen')
 }
 
-defineExpose({ startStateTools })
+defineExpose({ startStateTools, setTools, activeTool, cancelTool, setFullScreen })
 onUnmounted(() => {
   startStateTools()
 })

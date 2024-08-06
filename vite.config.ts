@@ -37,6 +37,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    dir: '__tests__',
     server: {
       deps: {
         inline: ['element-plus'],
