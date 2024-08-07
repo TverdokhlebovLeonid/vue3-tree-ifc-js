@@ -37,3 +37,15 @@ npm run build
 ```sh
 npm run lint
 ```
+
+### Run all the tests [vitest](https://vitest.dev/)
+
+```sh
+npm run test
+```
+
+### Run one of the tests, for example IfcViewingRequisites.test.ts
+
+```sh
+npm run test-single
+```

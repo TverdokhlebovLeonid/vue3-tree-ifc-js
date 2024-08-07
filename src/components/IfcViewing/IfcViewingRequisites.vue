@@ -33,15 +33,20 @@ const setModel = (model: IModelLevels[]): void => {
   levelActive.value = null
   modelLevels.value = model
 }
-defineExpose({
-  setModel,
-  modelLevels,
-})
 
 const setElementName = (name: string): string => {
   const key = dictionaryIfcViewing?.[name] ? name : DEFAULT_KEY
   return dictionaryIfcViewing[key].single
 }
+
+defineExpose({
+  setModel,
+  modelLevels,
+  setElementName,
+  levelActive,
+  transferLevel,
+  setLevelHide,
+})
 
 const PROPS_TREE = {
   value: 'expressID',
