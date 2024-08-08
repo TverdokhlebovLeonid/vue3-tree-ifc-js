@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Snapshot and render component 1`] = `
+exports[`IfcViewingRequisites test component > Snapshot and render component 1`] = `
 "<div data-v-3063711b="" class="ifc-requisites"><b data-v-3063711b="" class="el-text el-text--primary el-text--large">Реквизиты</b>
   <div data-v-3063711b="" class="el-tree" role="tree" style="max-width: 100%;">
     <div class="el-tree__empty-block"><span class="el-tree__empty-text">No Data</span></div>
