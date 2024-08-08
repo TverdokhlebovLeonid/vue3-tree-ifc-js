@@ -1,7 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { expect, test } from 'vitest'
 import IfcViewingRequisites from '@/components/IfcViewing/IfcViewingRequisites.vue'
-import { nextTick } from 'vue'
 import { modelLevels } from './dataMock'
 
 const TEST_ID = 63
@@ -9,7 +8,7 @@ const TEST_ID = 63
 test('Snapshot and render component', async () => {
   const component = mount(IfcViewingRequisites)
   component.vm.modelLevels = modelLevels
-  await nextTick()
+  await component.vm.$nextTick()
   expect(component.find('.ifc-requisites').find('b').text()).toBe('Реквизиты')
   expect(component.html()).toMatchSnapshot()
 })

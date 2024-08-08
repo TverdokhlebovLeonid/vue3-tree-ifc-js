@@ -13,6 +13,12 @@ test('Should render', async () => {
       .find('.el-icon')
       .exists(),
   ).toBe(true)
+  expect(
+    component
+      .find('.ifc-tools__buttons')
+      .findAll('span')
+      .map((span) => span.text()),
+  ).toEqual(['Плоскость', 'Координаты', 'Куб', 'Во весь экран'])
   const button = component.find('button')
   await button.trigger('click')
   expect(component.emitted('tool-selection')).toBeTruthy()
