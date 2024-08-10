@@ -1,4 +1,4 @@
-export const modelLevels = [
+export const mockModelLevels = [
   {
     check: true,
     children: [
@@ -12,3 +12,17 @@ export const modelLevels = [
     type: 'IFCBUILDINGSTOREY',
   },
 ]
+
+export const mockSlot = {
+  slots: {
+    default: '<div class="vitest-slot-div"><p>Vitest Slot</p></div>',
+  },
+}
+
+export const mockRoute = {
+  path: '/',
+  meta: {
+    path: 'Default',
+    title: 'Просмотр IFC файлов - Vitest',
+  },
+}

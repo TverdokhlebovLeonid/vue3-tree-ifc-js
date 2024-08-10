@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const title = computed((): string => (route.meta?.title as string) || '')
+const title = computed((): string => (route?.meta?.title as string) || '')
 </script>
 
 <template>

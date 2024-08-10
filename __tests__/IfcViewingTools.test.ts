@@ -1,5 +1,4 @@
 import { mount } from '@vue/test-utils'
-import { expect } from 'vitest'
 import IfcViewingTools from '@/components/IfcViewing/IfcViewingTools.vue'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 import type { ComponentWrapperType } from './interfaceIfcTests'

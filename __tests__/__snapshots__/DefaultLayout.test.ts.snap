@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DefaultLayout test component > Snapshot component 1`] = `
+"<div data-v-75d0be1e="" class="default-layout">
+  <section data-v-75d0be1e="" class="el-container is-vertical">
+    <header data-v-75d0be1e="" class="el-header"><span data-v-75d0be1e="" class="el-text">Просмотр IFC файлов - Vitest</span></header>
+    <main data-v-75d0be1e="" class="el-main">
+      <div class="vitest-slot-div">
+        <p>Vitest Slot</p>
+      </div>
+    </main>
+  </section>
+</div>"
+`;

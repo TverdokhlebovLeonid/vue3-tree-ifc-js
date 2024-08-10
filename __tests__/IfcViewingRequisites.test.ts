@@ -1,7 +1,6 @@
 import { mount } from '@vue/test-utils'
-import { expect } from 'vitest'
 import IfcViewingRequisites from '@/components/IfcViewing/IfcViewingRequisites.vue'
-import { modelLevels } from './dataMock'
+import { mockModelLevels } from './dataMock'
 import type { ComponentWrapperType } from './interfaceIfcTests'
 
 const TEST_ID = 63
@@ -14,7 +13,7 @@ describe('IfcViewingRequisites test component', () => {
   })
 
   it('Snapshot and render component', async () => {
-    component.vm.modelLevels = modelLevels
+    component.vm.modelLevels = mockModelLevels
     await component.vm.$nextTick()
     expect(component.find('.ifc-requisites').find('b').text()).toBe('Реквизиты')
     expect(component.html()).toMatchSnapshot()
@@ -29,21 +28,21 @@ describe('IfcViewingRequisites test component', () => {
   })
 
   it('Function setModel', () => {
-    component.vm.setModel(modelLevels)
+    component.vm.setModel(mockModelLevels)
     expect(component.vm.modelLevels[0].customID).toBe('0-level')
     expect(component.vm.levelActive).toBe(null)
   })
 
   it('Function transferLevel', () => {
     component.vm.levelActive = TEST_ID
-    component.vm.transferLevel(modelLevels, TEST_ID)
+    component.vm.transferLevel(mockModelLevels, TEST_ID)
     expect(component.vm.levelActive).toBe(null)
     expect(component.emitted('transfer-level')?.[0]).toEqual([[]])
   })
 
   it('Function transferLevel(same id)', () => {
     component.vm.levelActive = 50
-    component.vm.transferLevel(modelLevels, TEST_ID)
+    component.vm.transferLevel(mockModelLevels, TEST_ID)
     expect(component.vm.levelActive).toBe(TEST_ID)
     expect(component.emitted('transfer-level')?.[0]).toEqual([[TEST_ID]])
   })
