@@ -1,51 +1,101 @@
-# vue-project
+# vue3-tree-ifc-js
 
-This template should help get you started developing with Vue 3, Vite, TS, Vitest, Element Plus, Sass.
+A web application for viewing and exploring **IFC models** (Industry Foundation Classes) — the standard data exchange format in BIM (Building Information Modeling).
 
-## Recommended IDE Setup
+The app lets you load IFC files, visualize a building’s 3D model, browse its spatial structure, and use navigation and sectioning tools.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Features
 
-## Type Support for `.vue` Imports in TS
+- **IFC 3D viewer** — model rendering powered by [web-ifc-viewer](https://github.com/ThatOpen/web-ifc-viewer) and [Three.js](https://threejs.org/)
+- **File upload** — pick a local `.ifc` file; a demo model (`public/ifc/demo.ifc`) loads on startup
+- **Requisites tree** — spatial structure of the model (storeys, spaces, etc.) with support for:
+  - highlighting elements in the 3D scene
+  - hiding and showing element groups
+- **Viewer tools:**
+  - **Plane** — create a section plane with a double-click; remove it with a right-click
+  - **Coordinates** — read model point coordinates on click
+  - **Navigation cube** — quick camera orientation changes
+  - **Full screen** — view the model in fullscreen mode
+- **Grid and axes** — scene references for easier navigation
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## Tech stack
 
-## Customize configuration
+| Category | Technologies |
+|----------|--------------|
+| UI | [Vue 3](https://vuejs.org/), [Element Plus](https://element-plus.org/) |
+| Build | [Vite](https://vitejs.dev/), TypeScript, Sass |
+| 3D / IFC | [Three.js](https://threejs.org/), [web-ifc-viewer](https://github.com/ThatOpen/web-ifc-viewer) |
+| Tests | [Vitest](https://vitest.dev/), [Vue Test Utils](https://test-utils.vuejs.org/) |
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
+## Quick start
 
 ```sh
 npm install
+npm run dev
 ```
 
-### Compile and Hot-Reload for Development
+After startup, open the URL printed by Vite (usually `http://localhost:5173`).
+
+To load your own model, use the file picker in the viewer UI — only `.ifc` files are supported.
+
+## Project structure
+
+```
+src/
+├── components/IfcViewing/   # IFC viewer, tools, navigation cube, requisites
+├── views/                   # application screens
+├── layouts/                 # page layouts
+└── constants/               # viewer tool constants
+public/
+└── ifc/                     # demo IFC model
+```
+
+## Scripts
+
+### Development with hot reload
 
 ```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### Production build
 
 ```sh
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### Preview production build
 
 ```sh
-npm run lint
+npm run preview
 ```
 
-### Run all the tests [vitest](https://vitest.dev/)
+### Type checking and linting
+
+```sh
+npm run type-check
+npm run lint
+npm run format
+```
+
+### Tests
 
 ```sh
 npm run test
 ```
 
-### Run one of the tests, for example IfcViewingRequisites.test.ts
+Run a single test suite (for example, `IfcViewingRequisites`):
 
 ```sh
 npm run test-single
 ```
+
+## Recommended IDE
+
+[VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (disable Vetur).
+
+TypeScript uses `vue-tsc` instead of `tsc` for proper type support in `.vue` files.
+
+## Configuration
+
+See the [Vite Configuration Reference](https://vitejs.dev/config/).

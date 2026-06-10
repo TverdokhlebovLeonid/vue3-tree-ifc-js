@@ -18,7 +18,8 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       sass: {
-        additionalData: `@import "@/assets/style/index.sass"`,
+        api: 'modern-compiler',
+        additionalData: `@use "@/assets/style/base" as *;\n`,
       },
     },
   },

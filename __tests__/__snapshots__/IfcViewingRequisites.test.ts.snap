@@ -3,7 +3,28 @@
 exports[`IfcViewingRequisites test component > Snapshot and render component 1`] = `
 "<div data-v-3063711b="" class="ifc-requisites"><b data-v-3063711b="" class="el-text el-text--primary el-text--large">Реквизиты</b>
   <div data-v-3063711b="" class="el-tree" role="tree" style="max-width: 100%;">
-    <div class="el-tree__empty-block"><span class="el-tree__empty-text">No Data</span></div>
+    <div class="el-vl__wrapper">
+      <div class="el-vl__window el-tree-virtual-list" style="position: relative; overflow-y: scroll; will-change: transform; direction: ltr; height: 400px;">
+        <div style="height: 26px; width: 100%; margin: 0px; box-sizing: border-box;">
+          <div class="el-tree-node is-focusable" role="treeitem" tabindex="-1" aria-expanded="false" aria-disabled="false" aria-checked="false" data-key="63" style="position: absolute; left: 0px; top: 0px; height: 26px; width: 100%;">
+            <div class="el-tree-node__content" style="padding-left: 0px; height: 26px;"><i class="el-icon el-tree-node__expand-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+                  <path fill="currentColor" d="M384 192v640l384-320.064z"></path>
+                </svg></i>
+              <!--v-if--><label data-v-3063711b="" class="el-checkbox el-checkbox--large is-checked el-tooltip__trigger" for="el-id-993-2"><span class="el-checkbox__input is-checked"><input class="el-checkbox__original" type="checkbox" id="el-id-993-2"><span class="el-checkbox__inner"></span></span>
+                <!--v-if-->
+              </label>
+              <!--teleport start-->
+              <!--teleport end--><span data-v-3063711b="" class="el-text el-text--primary el-tooltip__trigger">Этаж/Уровень</span>
+              <!--teleport start-->
+              <!--teleport end-->
+            </div>
+          </div>
+        </div>
+      </div>
+      <div role="presentation" class="el-virtual-scrollbar" style="position: absolute; width: 6px; height: 398px; top: 2px; right: 2px; bottom: 2px; border-radius: 4px;">
+        <div class="el-scrollbar__thumb" style="display: none;"></div>
+      </div>
+    </div>
   </div>
 </div>"
 `;
