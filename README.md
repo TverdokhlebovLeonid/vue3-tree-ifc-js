@@ -99,3 +99,7 @@ TypeScript uses `vue-tsc` instead of `tsc` for proper type support in `.vue` fil
 ## Configuration
 
 See the [Vite Configuration Reference](https://vitejs.dev/config/).
+
+## Live demo
+
+A simplified IFC viewer is available at [tverleon.com/cases](https://tverleon.com/cases). You can try it in the browser without running this project locally.
