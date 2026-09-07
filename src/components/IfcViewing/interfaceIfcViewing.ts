@@ -28,12 +28,7 @@ export interface IModelLevels {
   expressID: number
 }
 
-export interface IDictionaryIfcViewing {
-  [key: string]: {
-    single: string
-    plural: string
-  }
-}
+export type IDictionaryIfcViewing = Record<string, string>
 
 export interface IModelCoordinates {
   x: number | string

@@ -7,7 +7,6 @@ const routes: Array<RouteRecordRaw> = [
     name: 'home',
     component: () => import('@/views/HomeScreen.vue'),
     meta: {
-      path: 'Default',
       title: 'Просмотр IFC файлов',
     },
   },

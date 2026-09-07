@@ -35,8 +35,8 @@ const setModel = (model: IModelLevels[]): void => {
 }
 
 const setElementName = (name: string): string => {
-  const key = dictionaryIfcViewing?.[name] ? name : DEFAULT_KEY
-  return dictionaryIfcViewing[key].single
+  const key = dictionaryIfcViewing[name] ? name : DEFAULT_KEY
+  return dictionaryIfcViewing[key]
 }
 
 defineExpose({
