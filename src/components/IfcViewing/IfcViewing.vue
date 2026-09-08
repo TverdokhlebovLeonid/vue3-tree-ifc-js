@@ -17,6 +17,7 @@ import type {
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 import { NavCube } from '@/components/IfcViewing/NavigationCube/NavCube'
 import { TEXT_HELP_PLANE } from '@/components/IfcViewing/dataIfcViewing'
+import { isIfcFile } from '@/utils/isIfcFile'
 
 const props = defineProps<{
   isFullscreen: boolean
@@ -60,7 +61,7 @@ const OPTIONS_LOADING = {
 const handleFileUpload = (): void => {
   if (file.value) {
     const fileIfc = file.value?.files?.[0]
-    if (fileIfc?.name.split('.')[1] === 'ifc') {
+    if (fileIfc && isIfcFile(fileIfc.name)) {
       loadingIfc.value = ElLoading.service(OPTIONS_LOADING)
       ifcViewing.value?.dispose()
       setStartIfcViewing()
