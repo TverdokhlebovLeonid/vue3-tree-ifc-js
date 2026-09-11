@@ -157,9 +157,14 @@ const createPlane = (): void => {
 const deletePlane = (): void => {
   ifcViewing.value?.clipper.deletePlane()
 }
+const resetTool = (): void => {
+  if (navCube.value) deleteNavCube()
+  activeTools.value = ''
+}
 const cancelPlane = (): void => {
   ifcViewing.value?.clipper.deleteAllPlanes()
-  toolSelection(IFC_VIEWING_TOOLS.createPlane)
+  resetTool()
+  emits('start-state-tools')
 }
 
 const switchToolSelection: ISwitchChoice = {
@@ -169,11 +174,10 @@ const switchToolSelection: ISwitchChoice = {
   NAV_CUBE: setNavCube,
 }
 const toolSelection = (tool: string = ''): void => {
-  if (activeTools.value !== tool) {
-    if (navCube.value) deleteNavCube()
-    activeTools.value = tool
-    if (tool) switchToolSelection[tool]()
-  }
+  if (activeTools.value === tool) return
+  if (navCube.value) deleteNavCube()
+  activeTools.value = tool
+  if (tool) switchToolSelection[tool]()
 }
 const resizeViewer = (): void => {
   if (ifcViewing.value?.context as IfcContext) ifcViewing.value?.context['resize']()
