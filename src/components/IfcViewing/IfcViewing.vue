@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, shallowRef, onMounted, onUnmounted } from 'vue'
 import { ElLoading, ElMessage } from 'element-plus'
-import { Color, type Scene, type Object3D } from 'three'
+import { Color, type Scene } from 'three'
 import { IfcViewerAPI } from 'web-ifc-viewer'
 import type { IfcContext } from 'web-ifc-viewer/dist/components'
 import type { IFCModel } from 'web-ifc-three/IFC/components/IFCModel'
@@ -41,6 +41,12 @@ const model = ref<IFCModel>()
 const scene = ref<Scene>()
 const modelLevels = ref<IModelLevels[]>([])
 const loadingIfc = ref()
+const subsets: ISubsets = {}
+const resetSubsets = (): void => {
+  for (const customID of Object.keys(subsets)) {
+    delete subsets[customID]
+  }
+}
 
 const loadIfc = async (url: string): Promise<void> => {
   await ifcViewing.value?.IFC.setWasmPath('../wasm/')
@@ -49,9 +55,10 @@ const loadIfc = async (url: string): Promise<void> => {
   ifcViewing.value?.context.ifcCamera.cameraControls.saveState()
   scene.value = ifcViewing.value?.context.getScene()
   model.value?.removeFromParent()
+  resetSubsets()
   modelLevels.value = []
   if (loadingIfc.value) loadingIfc.value.close()
-  setSpatialStructure()
+  await setSpatialStructure()
 }
 
 const OPTIONS_LOADING = {
@@ -101,8 +108,8 @@ const setRightChoice = (): void => {
 
 const setSpatialStructure = async (): Promise<void> => {
   const structure = await ifcViewing.value?.IFC.getSpatialStructure(0)
-  const spatialStructure: IModelElement[] = structure?.children[0]?.children[0].children
-  setModelLevels(spatialStructure)
+  const spatialStructure: IModelElement[] = structure?.children[0]?.children[0].children ?? []
+  await setModelLevels(spatialStructure)
 }
 onMounted(() => {
   setStartIfcViewing()
@@ -189,6 +196,7 @@ defineExpose({
   resizeViewer,
 })
 onUnmounted(() => {
+  resetSubsets()
   ifcViewing.value?.dispose()
 })
 
@@ -197,27 +205,25 @@ const switchMovingMouse: ISwitchChoice = {
   CREATE_PLANE: selectElementMovingMouse,
 }
 
-const subsets: ISubsets | undefined = {}
-const setModelLevels = (array: IModelElement[]): void => {
-  array.forEach(async (element: IModelElement, index: number) => {
-    if ('children' in element) {
-      const array: number[] = []
-      element.children.forEach((el: IModelElement) => {
-        array.push(el.expressID)
-      })
-      const customID: string = `${index.toString()}-level`
-      modelLevels.value.push({
-        ids: array,
-        check: true,
-        customID,
-        type: element.type,
-        children: element?.children,
-        expressID: element.expressID,
-      })
-      subsets[customID] = (await newSubsetOfType(array, customID)) as Object3D
-    }
-  })
-  emits('set-model', modelLevels.value)
+const setModelLevels = async (elements: IModelElement[]): Promise<void> => {
+  const nextLevels: IModelLevels[] = []
+  for (const [index, element] of elements.entries()) {
+    if (!('children' in element)) continue
+    const ids = element.children.map((el: IModelElement) => el.expressID)
+    const customID = `${index}-level`
+    nextLevels.push({
+      ids,
+      check: true,
+      customID,
+      type: element.type,
+      children: element.children,
+      expressID: element.expressID,
+    })
+    const subset = await newSubsetOfType(ids, customID)
+    if (subset) subsets[customID] = subset
+  }
+  modelLevels.value = nextLevels
+  emits('set-model', nextLevels)
 }
 const newSubsetOfType = (array: number[], customID: string) => {
   return ifcViewing.value?.IFC.loader.ifcManager.createSubset({
@@ -238,9 +244,10 @@ const removeSubset = (customID: string): void => {
 }
 
 const addHide = async (customID: string): Promise<void> => {
-  const array: number[] = modelLevels.value.find((id) => id.customID === customID)?.ids || []
+  const ids = modelLevels.value.find((level) => level.customID === customID)?.ids || []
   removeSubset(customID)
-  subsets[customID] = (await newSubsetOfType(array, customID)) as Object3D
+  const subset = await newSubsetOfType(ids, customID)
+  if (subset) subsets[customID] = subset
 }
 </script>
 
