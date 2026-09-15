@@ -37,10 +37,10 @@ const file = ref<HTMLInputElement>()
 const container = ref<HTMLDivElement>()
 const ifcViewing = shallowRef<IIfcViewerAPI>()
 const activeTools = ref<string>('')
-const model = ref<IFCModel>()
-const scene = ref<Scene>()
+const model = shallowRef<IFCModel>()
+const scene = shallowRef<Scene>()
 const modelLevels = ref<IModelLevels[]>([])
-const loadingIfc = ref()
+const loadingIfc = ref<ReturnType<typeof ElLoading.service>>()
 const subsets: ISubsets = {}
 const resetSubsets = (): void => {
   for (const customID of Object.keys(subsets)) {
@@ -48,10 +48,20 @@ const resetSubsets = (): void => {
   }
 }
 
+const getModelID = (): number | undefined => {
+  const modelID = model.value?.modelID
+  return modelID == null ? undefined : modelID
+}
+
 const loadIfc = async (url: string): Promise<void> => {
   await ifcViewing.value?.IFC.setWasmPath('../wasm/')
   model.value = await ifcViewing.value?.IFC.loadIfcUrl(url, true)
-  await ifcViewing.value?.shadowDropper.renderShadow(model.value?.modelID as number)
+  const modelID = getModelID()
+  if (modelID == null) {
+    if (loadingIfc.value) loadingIfc.value.close()
+    return
+  }
+  await ifcViewing.value?.shadowDropper.renderShadow(modelID)
   ifcViewing.value?.context.ifcCamera.cameraControls.saveState()
   scene.value = ifcViewing.value?.context.getScene()
   model.value?.removeFromParent()
@@ -120,7 +130,9 @@ const resetView = (): void => {
   ifcViewing.value?.context.ifcCamera.cameraControls.reset()
 }
 const highlightModelLevel = (level: number[]): void => {
-  ifcViewing.value?.IFC.selector.pickIfcItemsByID(model.value?.modelID as number, level)
+  const modelID = getModelID()
+  if (modelID == null) return
+  ifcViewing.value?.IFC.selector.pickIfcItemsByID(modelID, level)
 }
 
 const setLevelHide = (data: IDataLevelHide): void => {
@@ -225,22 +237,22 @@ const setModelLevels = async (elements: IModelElement[]): Promise<void> => {
   modelLevels.value = nextLevels
   emits('set-model', nextLevels)
 }
-const newSubsetOfType = (array: number[], customID: string) => {
+const newSubsetOfType = (ids: number[], customID: string) => {
+  const modelID = getModelID()
+  if (modelID == null) return
   return ifcViewing.value?.IFC.loader.ifcManager.createSubset({
-    modelID: model.value?.modelID as number,
+    modelID,
     scene: scene.value,
-    ids: array,
+    ids,
     removePrevious: true,
     customID,
   })
 }
 
 const removeSubset = (customID: string): void => {
-  ifcViewing.value?.IFC.loader.ifcManager.removeSubset(
-    model.value?.modelID as number,
-    undefined,
-    customID,
-  )
+  const modelID = getModelID()
+  if (modelID == null) return
+  ifcViewing.value?.IFC.loader.ifcManager.removeSubset(modelID, undefined, customID)
 }
 
 const addHide = async (customID: string): Promise<void> => {
