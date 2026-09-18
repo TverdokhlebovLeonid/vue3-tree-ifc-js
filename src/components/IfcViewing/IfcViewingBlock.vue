@@ -1,68 +1,21 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick } from 'vue'
 import IfcViewing from '@/components/IfcViewing/IfcViewing.vue'
 import IfcViewingTools from '@/components/IfcViewing/IfcViewingTools.vue'
 import IfcViewingRequisites from '@/components/IfcViewing/IfcViewingRequisites.vue'
-import type {
-  IDocument,
-  IDocumentElement,
-  IModelLevels,
-  IDataLevelHide,
-} from '@/components/IfcViewing/interfaceIfcViewing'
+import { useFullscreen } from '@/composables/useFullscreen'
+import type { IModelLevels, IDataLevelHide } from '@/components/IfcViewing/interfaceIfcViewing'
 
-const isFullscreen = ref<boolean>(false)
 const childViewer = ref<InstanceType<typeof IfcViewing> | null>(null)
-const toolSelection = (tool: string): void => {
-  childViewer.value?.toolSelection(tool)
-}
-
-const isWebKit = ref<boolean>(true)
-const setWebKit = (): void => {
-  isWebKit.value = !!document.documentElement.requestFullscreen
-}
-const docFullscreenElement = (): Element | null | object => {
-  return isWebKit.value
-    ? document.fullscreenElement
-    : (document as IDocument).webkitFullscreenElement
-}
-const docRequestFullscreen = (): Promise<void> => {
-  return isWebKit.value
-    ? document.documentElement.requestFullscreen()
-    : (document.documentElement as IDocumentElement).webkitRequestFullscreen()
-}
-const docExitFullscreen = (): Promise<void> => {
-  return isWebKit.value ? document.exitFullscreen() : (document as IDocument).webkitExitFullscreen()
-}
-const fullscreenChange = (): void => {
-  isFullscreen.value = !!docFullscreenElement()
-  if (!docFullscreenElement()) {
-    removeFullscreen()
+const { isFullscreen, toggle: openFullscreen, close: closeButtonFullscreen } = useFullscreen({
+  onExit: () => {
     nextTick(() => {
       childViewer.value?.resizeViewer()
     })
-  }
-}
-const addFullscreen = (): void => {
-  document.addEventListener('fullscreenchange', fullscreenChange)
-}
-const removeFullscreen = (): void => {
-  document.removeEventListener('fullscreenchange', fullscreenChange)
-}
-const openFullscreen = (): void => {
-  if (!docFullscreenElement()) {
-    docRequestFullscreen()
-    addFullscreen()
-    isFullscreen.value = true
-  } else {
-    docExitFullscreen()
-    removeFullscreen()
-    isFullscreen.value = false
-  }
-}
-const closeButtonFullscreen = (): void => {
-  docExitFullscreen()
-  removeFullscreen()
-  isFullscreen.value = false
+  },
+})
+const toolSelection = (tool: string): void => {
+  childViewer.value?.toolSelection(tool)
 }
 
 const highlightModelLevel = (level: number[]): void => {
@@ -81,10 +34,6 @@ const managementTools = ref<InstanceType<typeof IfcViewingTools> | null>(null)
 const startStateTools = (): void => {
   managementTools.value?.startStateTools()
 }
-
-onMounted(() => {
-  setWebKit()
-})
 </script>
 
 <template>

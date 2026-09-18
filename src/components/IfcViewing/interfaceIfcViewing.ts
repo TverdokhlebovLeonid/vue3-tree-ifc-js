@@ -36,14 +36,6 @@ export interface IModelCoordinates {
   z: number | string
 }
 
-export interface IDocumentElement extends HTMLElement {
-  webkitRequestFullscreen: () => Promise<void>
-}
-export interface IDocument extends Document {
-  webkitExitFullscreen: () => Promise<void>
-  webkitFullscreenElement: object
-}
-
 export interface ITools {
   active: boolean
   icon: string
