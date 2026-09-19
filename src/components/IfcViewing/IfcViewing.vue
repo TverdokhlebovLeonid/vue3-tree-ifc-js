@@ -208,6 +208,7 @@ defineExpose({
   resizeViewer,
 })
 onUnmounted(() => {
+  if (navCube.value) deleteNavCube()
   resetSubsets()
   ifcViewing.value?.dispose()
 })
@@ -217,11 +218,15 @@ const switchMovingMouse: ISwitchChoice = {
   CREATE_PLANE: selectElementMovingMouse,
 }
 
+const IFC_TYPES_WITHOUT_MESH = new Set(['IFCSPACE'])
+
 const setModelLevels = async (elements: IModelElement[]): Promise<void> => {
   const nextLevels: IModelLevels[] = []
   for (const [index, element] of elements.entries()) {
     if (!('children' in element)) continue
-    const ids = element.children.map((el: IModelElement) => el.expressID)
+    const ids = element.children
+      .filter((el: IModelElement) => !IFC_TYPES_WITHOUT_MESH.has(el.type))
+      .map((el: IModelElement) => el.expressID)
     const customID = `${index}-level`
     nextLevels.push({
       ids,

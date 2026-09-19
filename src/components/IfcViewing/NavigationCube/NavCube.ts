@@ -41,6 +41,7 @@ export class NavCube {
   isCanvasRemove: boolean
   isKeyMove: boolean
   htmlElementCube: string
+  animationFrameId: number
   constructor(viewer: IIfcViewerAPI, htmlElementCube: string) {
     this.viewer = viewer
     this.scene = new Scene()
@@ -84,6 +85,7 @@ export class NavCube {
     this.boxCube = new BoxCube(this.scene)
     this.mouseOn = false
     this.isKeyMove = true
+    this.animationFrameId = 0
     this.onAnimateIfcViewing()
     this.onHover()
   }
@@ -122,16 +124,19 @@ export class NavCube {
     const y2 = bounds.bottom - bounds.top
     this.mouse.y = -(y1 / y2) * 2 + 1
   }
+  onMouseMove = (event: MouseEvent): void => {
+    this.cast(event)
+    this.mouseOn = true
+  }
+
+  onMouseOut = (): void => {
+    this.mouseOn = false
+  }
+
   onHover() {
     if (this.isKeyMove) {
-      const _this = this as this
-      _this.renderer.domElement.addEventListener('mousemove', function (event: MouseEvent) {
-        _this.cast(event)
-        _this.mouseOn = true
-      })
-      _this.renderer.domElement.addEventListener('mouseout', function () {
-        _this.mouseOn = false
-      })
+      this.renderer.domElement.addEventListener('mousemove', this.onMouseMove)
+      this.renderer.domElement.addEventListener('mouseout', this.onMouseOut)
     }
   }
   hover() {
@@ -210,18 +215,36 @@ export class NavCube {
   }
 
   onAnimateIfcViewing() {
-    const _this = this as this
     const animate = () => {
-      if (this.isCanvasRemove) {
-        _this.animate()
-        requestAnimationFrame(animate)
-      }
+      if (!this.isCanvasRemove) return
+      this.animate()
+      this.animationFrameId = requestAnimationFrame(animate)
     }
     animate()
   }
 
-  deleteElement() {
-    this.canvas.remove()
+  dispose() {
+    if (!this.isCanvasRemove) return
     this.isCanvasRemove = false
+    cancelAnimationFrame(this.animationFrameId)
+
+    this.renderer.domElement.removeEventListener('mousemove', this.onMouseMove)
+    this.renderer.domElement.removeEventListener('mouseout', this.onMouseOut)
+    this.renderer.domElement.onclick = null
+
+    this.scene.traverse((child) => {
+      const mesh = child as { geometry?: { dispose: () => void } }
+      mesh.geometry?.dispose()
+    })
+    this.scene.clear()
+
+    this.renderer.dispose()
+    this.renderer.forceContextLoss()
+    this.canvas.remove()
+    this.container = null
+  }
+
+  deleteElement() {
+    this.dispose()
   }
 }
