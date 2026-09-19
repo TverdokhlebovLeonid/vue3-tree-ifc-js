@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { IModelLevels, IDataLevelHide } from '@/components/IfcViewing/interfaceIfcViewing'
+import type { IModelLevels, IDataLevelHide } from '@/types/ifc'
 import { dictionaryIfcViewing, DEFAULT_KEY } from '@/components/IfcViewing/dictionaryIfcViewing'
 
 const modelLevels = ref<IModelLevels[]>([])

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onUnmounted } from 'vue'
 import { TOOLS } from '@/components/IfcViewing/dataIfcViewing'
-import type { ITools } from '@/components/IfcViewing/interfaceIfcViewing'
+import type { ITools } from '@/types/tools'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 
 const emits = defineEmits<{

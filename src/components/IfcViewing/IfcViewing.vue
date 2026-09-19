@@ -6,14 +6,14 @@ import { IfcViewerAPI } from 'web-ifc-viewer'
 import type { IfcContext } from 'web-ifc-viewer/dist/components'
 import type { IFCModel } from 'web-ifc-three/IFC/components/IFCModel'
 import type {
-  ISwitchChoice,
   ISubsets,
   IModelLevels,
   IDataLevelHide,
   IModelCoordinates,
   IIfcViewerAPI,
   IModelElement,
-} from '@/components/IfcViewing/interfaceIfcViewing'
+} from '@/types/ifc'
+import type { ISwitchChoice } from '@/types/tools'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 import { NavCube } from '@/components/IfcViewing/NavigationCube/NavCube'
 import { TEXT_HELP_PLANE } from '@/components/IfcViewing/dataIfcViewing'
@@ -146,9 +146,9 @@ const setModelCoordinates = (): void => {
 }
 const createCoordinatesMovingMouse = (): void => {
   const coordinate = ifcViewing.value?.context?.castRayIfc()?.point || null
-  modelCoordinates.value.x = coordinate?.x || ''
-  modelCoordinates.value.y = coordinate?.y || ''
-  modelCoordinates.value.z = coordinate?.z || ''
+  modelCoordinates.value.x = coordinate?.x ?? null
+  modelCoordinates.value.y = coordinate?.y ?? null
+  modelCoordinates.value.z = coordinate?.z ?? null
 }
 
 const selectElementMovingMouse = (): void => {

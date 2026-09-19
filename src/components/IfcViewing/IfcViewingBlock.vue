@@ -4,7 +4,7 @@ import IfcViewing from '@/components/IfcViewing/IfcViewing.vue'
 import IfcViewingTools from '@/components/IfcViewing/IfcViewingTools.vue'
 import IfcViewingRequisites from '@/components/IfcViewing/IfcViewingRequisites.vue'
 import { useFullscreen } from '@/composables/useFullscreen'
-import type { IModelLevels, IDataLevelHide } from '@/components/IfcViewing/interfaceIfcViewing'
+import type { IModelLevels, IDataLevelHide } from '@/types/ifc'
 
 const childViewer = ref<InstanceType<typeof IfcViewing> | null>(null)
 const { isFullscreen, toggle: openFullscreen, close: closeButtonFullscreen } = useFullscreen({

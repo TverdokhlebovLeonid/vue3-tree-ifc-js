@@ -1,13 +1,5 @@
 import { onScopeDispose, ref } from 'vue'
-
-interface WebkitDocument extends Document {
-  webkitExitFullscreen?: () => Promise<void>
-  webkitFullscreenElement?: Element | null
-}
-
-interface WebkitHTMLElement extends HTMLElement {
-  webkitRequestFullscreen?: () => Promise<void>
-}
+import type { IWebkitDocument, IWebkitHTMLElement } from '@/types/fullscreen'
 
 const FULLSCREEN_EVENTS = ['fullscreenchange', 'webkitfullscreenchange'] as const
 
@@ -17,19 +9,19 @@ const hasStandardFullscreen = (): boolean =>
 
 const getFullscreenElement = (): Element | null => {
   if (hasStandardFullscreen()) return document.fullscreenElement
-  return (document as WebkitDocument).webkitFullscreenElement ?? null
+  return (document as IWebkitDocument).webkitFullscreenElement ?? null
 }
 
 const requestFullscreen = (): Promise<void> => {
   if (hasStandardFullscreen()) return document.documentElement.requestFullscreen()
   return (
-    (document.documentElement as WebkitHTMLElement).webkitRequestFullscreen?.() ?? Promise.resolve()
+    (document.documentElement as IWebkitHTMLElement).webkitRequestFullscreen?.() ?? Promise.resolve()
   )
 }
 
 const exitFullscreen = (): Promise<void> => {
   if (hasStandardFullscreen()) return document.exitFullscreen()
-  return (document as WebkitDocument).webkitExitFullscreen?.() ?? Promise.resolve()
+  return (document as IWebkitDocument).webkitExitFullscreen?.() ?? Promise.resolve()
 }
 
 export const useFullscreen = (options: { onExit?: () => void } = {}) => {

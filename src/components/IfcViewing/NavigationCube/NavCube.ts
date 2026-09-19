@@ -12,7 +12,7 @@ import {
 } from 'three'
 import { LightColor, NavCubeMaterial } from '@/components/IfcViewing/NavigationCube/NavCubeMaterial'
 import { BoxCube, switchPick } from '@/components/IfcViewing/NavigationCube/BoxCube'
-import type { IIfcViewerAPI } from '@/components/IfcViewing/interfaceIfcViewing'
+import type { IIfcViewerAPI } from '@/types/ifc'
 import type {
   ICamera,
   IRaycaster,
