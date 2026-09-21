@@ -1,23 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, shallowRef, onMounted, onUnmounted } from 'vue'
-import { ElLoading, ElMessage } from 'element-plus'
-import { Color, type Scene } from 'three'
-import { IfcViewerAPI } from 'web-ifc-viewer'
-import type { IfcContext } from 'web-ifc-viewer/dist/components'
-import type { IFCModel } from 'web-ifc-three/IFC/components/IFCModel'
+import { ref, computed, shallowRef, onUnmounted } from 'vue'
 import type {
   ISubsets,
   IModelLevels,
   IDataLevelHide,
   IModelCoordinates,
-  IIfcViewerAPI,
   IModelElement,
 } from '@/types/ifc'
 import type { ISwitchChoice } from '@/types/tools'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 import { NavCube } from '@/components/IfcViewing/NavigationCube/NavCube'
 import { TEXT_HELP_PLANE } from '@/components/IfcViewing/dataIfcViewing'
-import { isIfcFile } from '@/utils/isIfcFile'
+import { useIfcViewer } from '@/composables/useIfcViewer'
 
 const props = defineProps<{
   isFullscreen: boolean
@@ -33,14 +27,8 @@ const classIfcViewingContainer = computed((): string =>
   props.isFullscreen ? 'fullscreen-viewer' : 'height-default',
 )
 
-const file = ref<HTMLInputElement>()
-const container = ref<HTMLDivElement>()
-const ifcViewing = shallowRef<IIfcViewerAPI>()
 const activeTools = ref<string>('')
-const model = shallowRef<IFCModel>()
-const scene = shallowRef<Scene>()
 const modelLevels = ref<IModelLevels[]>([])
-const loadingIfc = ref<ReturnType<typeof ElLoading.service>>()
 const subsets: ISubsets = {}
 const resetSubsets = (): void => {
   for (const customID of Object.keys(subsets)) {
@@ -48,62 +36,30 @@ const resetSubsets = (): void => {
   }
 }
 
-const getModelID = (): number | undefined => {
-  const modelID = model.value?.modelID
-  return modelID == null ? undefined : modelID
-}
+const {
+  file,
+  container,
+  ifcViewing,
+  model,
+  scene,
+  getModelID,
+  handleFileUpload,
+  resetView,
+  resizeViewer,
+  dispose,
+} = useIfcViewer({
+  onModelReady: () => {
+    resetSubsets()
+    modelLevels.value = []
+  },
+  onSpatialStructure: () => setSpatialStructure(),
+  onFileSelected: () => emits('start-state-tools'),
+})
 
-const loadIfc = async (url: string): Promise<void> => {
-  await ifcViewing.value?.IFC.setWasmPath('../wasm/')
-  model.value = await ifcViewing.value?.IFC.loadIfcUrl(url, true)
-  const modelID = getModelID()
-  if (modelID == null) {
-    if (loadingIfc.value) loadingIfc.value.close()
-    return
-  }
-  await ifcViewing.value?.shadowDropper.renderShadow(modelID)
-  ifcViewing.value?.context.ifcCamera.cameraControls.saveState()
-  scene.value = ifcViewing.value?.context.getScene()
-  model.value?.removeFromParent()
-  resetSubsets()
-  modelLevels.value = []
-  if (loadingIfc.value) loadingIfc.value.close()
-  await setSpatialStructure()
-}
-
-const OPTIONS_LOADING = {
-  lock: true,
-  text: 'Loading',
-}
-const handleFileUpload = (): void => {
-  if (file.value) {
-    const fileIfc = file.value?.files?.[0]
-    if (fileIfc && isIfcFile(fileIfc.name)) {
-      loadingIfc.value = ElLoading.service(OPTIONS_LOADING)
-      ifcViewing.value?.dispose()
-      setStartIfcViewing()
-      loadIfc(URL.createObjectURL(fileIfc))
-      emits('start-state-tools')
-    } else {
-      ElMessage({
-        showClose: true,
-        message: 'Вы загрузили не ifc формат.',
-        type: 'error',
-      })
-    }
-  }
-}
-
-const setStartIfcViewing = (): void => {
-  ifcViewing.value = new IfcViewerAPI({
-    container: container.value as HTMLDivElement,
-    backgroundColor: new Color(0xffffff),
-  })
-  ifcViewing.value.grid.setGrid()
-  ifcViewing.value.axes.setAxes(10)
-  ifcViewing.value.clipper.active = true
-  ifcViewing.value.context.ifcCamera.cameraControls.setPosition(0, 0, 95)
-  ifcViewing.value.context.ifcCamera.cameraControls.zoomTo(4)
+const setSpatialStructure = async (): Promise<void> => {
+  const structure = await ifcViewing.value?.IFC.getSpatialStructure(0)
+  const spatialStructure: IModelElement[] = structure?.children[0]?.children[0].children ?? []
+  await setModelLevels(spatialStructure)
 }
 
 const setMovingMouse = (): void => {
@@ -116,19 +72,6 @@ const setRightChoice = (): void => {
   if (activeTools.value === IFC_VIEWING_TOOLS.createPlane) deletePlane()
 }
 
-const setSpatialStructure = async (): Promise<void> => {
-  const structure = await ifcViewing.value?.IFC.getSpatialStructure(0)
-  const spatialStructure: IModelElement[] = structure?.children[0]?.children[0].children ?? []
-  await setModelLevels(spatialStructure)
-}
-onMounted(() => {
-  setStartIfcViewing()
-  loadIfc('../ifc/demo.ifc')
-})
-
-const resetView = (): void => {
-  ifcViewing.value?.context.ifcCamera.cameraControls.reset()
-}
 const highlightModelLevel = (level: number[]): void => {
   const modelID = getModelID()
   if (modelID == null) return
@@ -198,9 +141,6 @@ const toolSelection = (tool: string = ''): void => {
   activeTools.value = tool
   if (tool) switchToolSelection[tool]()
 }
-const resizeViewer = (): void => {
-  if (ifcViewing.value?.context as IfcContext) ifcViewing.value?.context['resize']()
-}
 defineExpose({
   highlightModelLevel,
   setLevelHide,
@@ -210,7 +150,7 @@ defineExpose({
 onUnmounted(() => {
   if (navCube.value) deleteNavCube()
   resetSubsets()
-  ifcViewing.value?.dispose()
+  dispose()
 })
 
 const switchMovingMouse: ISwitchChoice = {
