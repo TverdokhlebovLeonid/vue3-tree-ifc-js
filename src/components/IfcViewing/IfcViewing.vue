@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, shallowRef, onUnmounted } from 'vue'
-import type {
-  ISubsets,
-  IModelLevels,
-  IDataLevelHide,
-  IModelCoordinates,
-  IModelElement,
-} from '@/types/ifc'
+import type { IModelCoordinates, IModelLevels } from '@/types/ifc'
 import type { ISwitchChoice } from '@/types/tools'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 import { NavCube } from '@/components/IfcViewing/NavigationCube/NavCube'
 import { TEXT_HELP_PLANE } from '@/components/IfcViewing/dataIfcViewing'
 import { useIfcViewer } from '@/composables/useIfcViewer'
+import { useIfcSubsets } from '@/composables/useIfcSubsets'
 
 const props = defineProps<{
   isFullscreen: boolean
@@ -28,13 +23,9 @@ const classIfcViewingContainer = computed((): string =>
 )
 
 const activeTools = ref<string>('')
-const modelLevels = ref<IModelLevels[]>([])
-const subsets: ISubsets = {}
-const resetSubsets = (): void => {
-  for (const customID of Object.keys(subsets)) {
-    delete subsets[customID]
-  }
-}
+
+let resetSubsets = (): void => undefined
+let setSpatialStructure = async (): Promise<void> => undefined
 
 const {
   file,
@@ -48,19 +39,19 @@ const {
   resizeViewer,
   dispose,
 } = useIfcViewer({
-  onModelReady: () => {
-    resetSubsets()
-    modelLevels.value = []
-  },
+  onModelReady: () => resetSubsets(),
   onSpatialStructure: () => setSpatialStructure(),
   onFileSelected: () => emits('start-state-tools'),
 })
 
-const setSpatialStructure = async (): Promise<void> => {
-  const structure = await ifcViewing.value?.IFC.getSpatialStructure(0)
-  const spatialStructure: IModelElement[] = structure?.children[0]?.children[0].children ?? []
-  await setModelLevels(spatialStructure)
-}
+const subsets = useIfcSubsets({
+  ifcViewing,
+  scene,
+  getModelID,
+  onLevels: (levels: IModelLevels[]) => emits('set-model', levels),
+})
+resetSubsets = subsets.resetSubsets
+setSpatialStructure = subsets.setSpatialStructure
 
 const setMovingMouse = (): void => {
   if (switchMovingMouse[activeTools.value]) switchMovingMouse[activeTools.value]()
@@ -72,15 +63,8 @@ const setRightChoice = (): void => {
   if (activeTools.value === IFC_VIEWING_TOOLS.createPlane) deletePlane()
 }
 
-const highlightModelLevel = (level: number[]): void => {
-  const modelID = getModelID()
-  if (modelID == null) return
-  ifcViewing.value?.IFC.selector.pickIfcItemsByID(modelID, level)
-}
-
-const setLevelHide = (data: IDataLevelHide): void => {
-  data.check ? addHide(data.customID) : removeSubset(data.customID)
-}
+const highlightModelLevel = subsets.highlightModelLevel
+const setLevelHide = subsets.setLevelHide
 
 const defaultCoordinates: IModelCoordinates = { x: 0, y: 0, z: 0 }
 const modelCoordinates = ref<IModelCoordinates>(defaultCoordinates)
@@ -149,62 +133,13 @@ defineExpose({
 })
 onUnmounted(() => {
   if (navCube.value) deleteNavCube()
-  resetSubsets()
+  subsets.resetSubsets()
   dispose()
 })
 
 const switchMovingMouse: ISwitchChoice = {
   CREATE_COORDINATES: createCoordinatesMovingMouse,
   CREATE_PLANE: selectElementMovingMouse,
-}
-
-const IFC_TYPES_WITHOUT_MESH = new Set(['IFCSPACE'])
-
-const setModelLevels = async (elements: IModelElement[]): Promise<void> => {
-  const nextLevels: IModelLevels[] = []
-  for (const [index, element] of elements.entries()) {
-    if (!('children' in element)) continue
-    const ids = element.children
-      .filter((el: IModelElement) => !IFC_TYPES_WITHOUT_MESH.has(el.type))
-      .map((el: IModelElement) => el.expressID)
-    const customID = `${index}-level`
-    nextLevels.push({
-      ids,
-      check: true,
-      customID,
-      type: element.type,
-      children: element.children,
-      expressID: element.expressID,
-    })
-    const subset = await newSubsetOfType(ids, customID)
-    if (subset) subsets[customID] = subset
-  }
-  modelLevels.value = nextLevels
-  emits('set-model', nextLevels)
-}
-const newSubsetOfType = (ids: number[], customID: string) => {
-  const modelID = getModelID()
-  if (modelID == null) return
-  return ifcViewing.value?.IFC.loader.ifcManager.createSubset({
-    modelID,
-    scene: scene.value,
-    ids,
-    removePrevious: true,
-    customID,
-  })
-}
-
-const removeSubset = (customID: string): void => {
-  const modelID = getModelID()
-  if (modelID == null) return
-  ifcViewing.value?.IFC.loader.ifcManager.removeSubset(modelID, undefined, customID)
-}
-
-const addHide = async (customID: string): Promise<void> => {
-  const ids = modelLevels.value.find((level) => level.customID === customID)?.ids || []
-  removeSubset(customID)
-  const subset = await newSubsetOfType(ids, customID)
-  if (subset) subsets[customID] = subset
 }
 </script>
 
