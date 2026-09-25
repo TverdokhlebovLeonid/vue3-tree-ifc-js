@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, shallowRef, onUnmounted } from 'vue'
-import type { IModelCoordinates, IModelLevels } from '@/types/ifc'
-import type { ISwitchChoice } from '@/types/tools'
+import { computed, shallowRef, onUnmounted } from 'vue'
+import type { IModelLevels } from '@/types/ifc'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 import { NavCube } from '@/components/IfcViewing/NavigationCube/NavCube'
 import { TEXT_HELP_PLANE } from '@/components/IfcViewing/dataIfcViewing'
 import { useIfcViewer } from '@/composables/useIfcViewer'
 import { useIfcSubsets } from '@/composables/useIfcSubsets'
+import { useIfcTools } from '@/composables/useIfcTools'
 
 const props = defineProps<{
   isFullscreen: boolean
@@ -21,8 +21,6 @@ const classIfcViewing = computed((): string =>
 const classIfcViewingContainer = computed((): string =>
   props.isFullscreen ? 'fullscreen-viewer' : 'height-default',
 )
-
-const activeTools = ref<string>('')
 
 let resetSubsets = (): void => undefined
 let setSpatialStructure = async (): Promise<void> => undefined
@@ -53,37 +51,28 @@ const subsets = useIfcSubsets({
 resetSubsets = subsets.resetSubsets
 setSpatialStructure = subsets.setSpatialStructure
 
-const setMovingMouse = (): void => {
-  if (switchMovingMouse[activeTools.value]) switchMovingMouse[activeTools.value]()
-}
-const setDoubleChoice = (): void => {
-  if (activeTools.value === IFC_VIEWING_TOOLS.createPlane) createPlane()
-}
-const setRightChoice = (): void => {
-  if (activeTools.value === IFC_VIEWING_TOOLS.createPlane) deletePlane()
-}
+let activateNavCube = (): void => undefined
+let deactivateNavCube = (): void => undefined
+
+const {
+  activeTools,
+  modelCoordinates,
+  toolSelection,
+  setMovingMouse,
+  setDoubleChoice,
+  setRightChoice,
+} = useIfcTools({
+  ifcViewing,
+  onResetToolbar: () => emits('start-state-tools'),
+  onActivateNavCube: () => activateNavCube(),
+  onDeactivateNavCube: () => deactivateNavCube(),
+})
 
 const highlightModelLevel = subsets.highlightModelLevel
 const setLevelHide = subsets.setLevelHide
 
-const defaultCoordinates: IModelCoordinates = { x: 0, y: 0, z: 0 }
-const modelCoordinates = ref<IModelCoordinates>(defaultCoordinates)
-const setModelCoordinates = (): void => {
-  modelCoordinates.value = { ...defaultCoordinates }
-}
-const createCoordinatesMovingMouse = (): void => {
-  const coordinate = ifcViewing.value?.context?.castRayIfc()?.point || null
-  modelCoordinates.value.x = coordinate?.x ?? null
-  modelCoordinates.value.y = coordinate?.y ?? null
-  modelCoordinates.value.z = coordinate?.z ?? null
-}
-
-const selectElementMovingMouse = (): void => {
-  ifcViewing.value?.IFC.selector.prePickIfcItem()
-}
-
 const navCube = shallowRef<NavCube | null>(null)
-const HTML_ELEMENT_CUBE: string = '.ifc-viewing__container_cube'
+const HTML_ELEMENT_CUBE = '.ifc-viewing__container_cube'
 const setNavCube = (): void => {
   if (ifcViewing.value && model.value) {
     ifcViewing.value.container = container.value
@@ -92,39 +81,13 @@ const setNavCube = (): void => {
   }
 }
 const deleteNavCube = (): void => {
+  if (!navCube.value) return
   delete ifcViewing.value?.container
-  if (navCube.value) navCube.value.deleteElement()
+  navCube.value.deleteElement()
   navCube.value = null
 }
-
-const createPlane = (): void => {
-  ifcViewing.value?.clipper.createPlane()
-}
-const deletePlane = (): void => {
-  ifcViewing.value?.clipper.deletePlane()
-}
-const resetTool = (): void => {
-  if (navCube.value) deleteNavCube()
-  activeTools.value = ''
-}
-const cancelPlane = (): void => {
-  ifcViewing.value?.clipper.deleteAllPlanes()
-  resetTool()
-  emits('start-state-tools')
-}
-
-const switchToolSelection: ISwitchChoice = {
-  CREATE_COORDINATES: setModelCoordinates,
-  CREATE_PLANE: createPlane,
-  CANCEL_PLANE: cancelPlane,
-  NAV_CUBE: setNavCube,
-}
-const toolSelection = (tool: string = ''): void => {
-  if (activeTools.value === tool) return
-  if (navCube.value) deleteNavCube()
-  activeTools.value = tool
-  if (tool) switchToolSelection[tool]()
-}
+activateNavCube = setNavCube
+deactivateNavCube = deleteNavCube
 defineExpose({
   highlightModelLevel,
   setLevelHide,
@@ -132,15 +95,10 @@ defineExpose({
   resizeViewer,
 })
 onUnmounted(() => {
-  if (navCube.value) deleteNavCube()
+  deleteNavCube()
   subsets.resetSubsets()
   dispose()
 })
-
-const switchMovingMouse: ISwitchChoice = {
-  CREATE_COORDINATES: createCoordinatesMovingMouse,
-  CREATE_PLANE: selectElementMovingMouse,
-}
 </script>
 
 <template>
