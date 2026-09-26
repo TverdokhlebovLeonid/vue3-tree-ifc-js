@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, shallowRef, onUnmounted } from 'vue'
+import { computed, onUnmounted } from 'vue'
 import type { IModelLevels } from '@/types/ifc'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
-import { NavCube } from '@/components/IfcViewing/NavigationCube/NavCube'
 import { TEXT_HELP_PLANE } from '@/components/IfcViewing/dataIfcViewing'
 import { useIfcViewer } from '@/composables/useIfcViewer'
 import { useIfcSubsets } from '@/composables/useIfcSubsets'
 import { useIfcTools } from '@/composables/useIfcTools'
+import { useNavCube } from '@/composables/useNavCube'
 
 const props = defineProps<{
   isFullscreen: boolean
@@ -51,8 +51,7 @@ const subsets = useIfcSubsets({
 resetSubsets = subsets.resetSubsets
 setSpatialStructure = subsets.setSpatialStructure
 
-let activateNavCube = (): void => undefined
-let deactivateNavCube = (): void => undefined
+const navCube = useNavCube({ ifcViewing, model, container })
 
 const {
   activeTools,
@@ -64,30 +63,13 @@ const {
 } = useIfcTools({
   ifcViewing,
   onResetToolbar: () => emits('start-state-tools'),
-  onActivateNavCube: () => activateNavCube(),
-  onDeactivateNavCube: () => deactivateNavCube(),
+  onActivateNavCube: navCube.activate,
+  onDeactivateNavCube: navCube.deactivate,
 })
 
 const highlightModelLevel = subsets.highlightModelLevel
 const setLevelHide = subsets.setLevelHide
 
-const navCube = shallowRef<NavCube | null>(null)
-const HTML_ELEMENT_CUBE = '.ifc-viewing__container_cube'
-const setNavCube = (): void => {
-  if (ifcViewing.value && model.value) {
-    ifcViewing.value.container = container.value
-    navCube.value = new NavCube(ifcViewing.value, HTML_ELEMENT_CUBE)
-    navCube.value.onPick(model.value)
-  }
-}
-const deleteNavCube = (): void => {
-  if (!navCube.value) return
-  delete ifcViewing.value?.container
-  navCube.value.deleteElement()
-  navCube.value = null
-}
-activateNavCube = setNavCube
-deactivateNavCube = deleteNavCube
 defineExpose({
   highlightModelLevel,
   setLevelHide,
@@ -95,7 +77,7 @@ defineExpose({
   resizeViewer,
 })
 onUnmounted(() => {
-  deleteNavCube()
+  navCube.deactivate()
   subsets.resetSubsets()
   dispose()
 })
