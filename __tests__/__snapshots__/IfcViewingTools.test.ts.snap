@@ -5,7 +5,7 @@ exports[`IfcViewingTools test component > Snapshot component 1`] = `
   <div data-v-b988461a="" class="ifc-tools__cancel">
     <!--v-if-->
   </div>
-  <div data-v-b988461a="" class="ifc-tools__buttons"><button data-v-b988461a="" aria-disabled="false" type="button" class="el-button el-button--primary el-button--small is-plain ifc-tools__buttons_active el-tooltip__trigger el-tooltip__trigger"><i class="el-icon">
+  <div data-v-b988461a="" class="ifc-tools__buttons"><button data-v-b988461a="" aria-disabled="false" type="button" class="el-button el-button--primary el-button--small is-plain el-tooltip__trigger"><i class="el-icon">
         <coin></coin>
       </i><span class="">Плоскость</span></button>
     <!--teleport start-->

@@ -7,6 +7,7 @@ import { useFullscreen } from '@/composables/useFullscreen'
 import type { IModelLevels, IDataLevelHide } from '@/types/ifc'
 
 const childViewer = ref<InstanceType<typeof IfcViewing> | null>(null)
+const activeTool = ref('')
 const { isFullscreen, toggle: openFullscreen, close: closeButtonFullscreen } = useFullscreen({
   onExit: () => {
     nextTick(() => {
@@ -29,19 +30,14 @@ const ifcViewingRequisites = ref<InstanceType<typeof IfcViewingRequisites> | nul
 const setModel = (model: IModelLevels[]): void => {
   ifcViewingRequisites.value?.setModel(model)
 }
-
-const managementTools = ref<InstanceType<typeof IfcViewingTools> | null>(null)
-const startStateTools = (): void => {
-  managementTools.value?.startStateTools()
-}
 </script>
 
 <template>
   <div class="ifc-viewing-block" :class="{ 'ifc-viewing-block__fullscreen': isFullscreen }">
     <IfcViewing
       ref="childViewer"
+      v-model:active-tool="activeTool"
       :is-fullscreen="isFullscreen"
-      @start-state-tools="startStateTools"
       @set-model="setModel"
     />
     <div
@@ -49,7 +45,7 @@ const startStateTools = (): void => {
       :class="{ 'ifc-viewing-block__control-panel_fullscreen': isFullscreen }"
     >
       <IfcViewingTools
-        ref="managementTools"
+        :active-tool="activeTool"
         @tool-selection="toolSelection"
         @open-fullscreen="openFullscreen"
       />

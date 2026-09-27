@@ -34,10 +34,12 @@ describe('IfcViewingTools test component', () => {
     expect(component.html()).toMatchSnapshot()
   })
 
-  it('Function setTools', () => {
+  it('Function setTools', async () => {
     component.vm.setTools(IFC_VIEWING_TOOLS.createPlane)
     expect(component.emitted('tool-selection')?.[0]).toEqual([IFC_VIEWING_TOOLS.createPlane])
+    await component.setProps({ activeTool: IFC_VIEWING_TOOLS.createPlane })
     expect(component.vm.activeTool).toBe(IFC_VIEWING_TOOLS.createPlane)
+    expect(component.find('.ifc-tools__buttons_active').text()).toContain('Плоскость')
   })
 
   it('Function setTools(fullScreen)', () => {
@@ -47,16 +49,17 @@ describe('IfcViewingTools test component', () => {
   })
 
   it('Function setTools(same tool)', () => {
-    component.vm.activeTool = IFC_VIEWING_TOOLS.navCube
-    component.vm.setTools(IFC_VIEWING_TOOLS.navCube)
-    expect(component.emitted('tool-selection')?.[0]).toEqual([''])
-    expect(component.vm.activeTool).toBe('')
+    const selected = mount(IfcViewingTools, {
+      props: { activeTool: IFC_VIEWING_TOOLS.navCube },
+    })
+    selected.vm.setTools(IFC_VIEWING_TOOLS.navCube)
+    expect(selected.emitted('tool-selection')?.[0]).toEqual([''])
+    expect(selected.vm.activeTool).toBe(IFC_VIEWING_TOOLS.navCube)
   })
 
   it('Function startStateTools', () => {
     component.vm.startStateTools()
     expect(component.emitted('tool-selection')?.[0]).toEqual([''])
-    expect(component.vm.activeTool).toBe('')
   })
 
   it('Function cancelTool', () => {

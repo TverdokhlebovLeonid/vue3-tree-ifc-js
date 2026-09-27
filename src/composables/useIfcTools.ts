@@ -1,12 +1,11 @@
-import { ref } from 'vue'
-import type { ShallowRef } from 'vue'
+import { ref, type Ref, type ShallowRef } from 'vue'
 import type { IIfcViewerAPI, IModelCoordinates } from '@/types/ifc'
 import type { ISwitchChoice } from '@/types/tools'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 
 type UseIfcToolsOptions = {
   ifcViewing: ShallowRef<IIfcViewerAPI | undefined>
-  onResetToolbar: () => void
+  activeTool: Ref<string>
   onActivateNavCube: () => void
   onDeactivateNavCube: () => void
 }
@@ -14,7 +13,6 @@ type UseIfcToolsOptions = {
 const defaultCoordinates = (): IModelCoordinates => ({ x: 0, y: 0, z: 0 })
 
 export const useIfcTools = (options: UseIfcToolsOptions) => {
-  const activeTools = ref('')
   const modelCoordinates = ref<IModelCoordinates>(defaultCoordinates())
 
   const setModelCoordinates = (): void => {
@@ -42,13 +40,12 @@ export const useIfcTools = (options: UseIfcToolsOptions) => {
 
   const resetTool = (): void => {
     options.onDeactivateNavCube()
-    activeTools.value = ''
+    options.activeTool.value = ''
   }
 
   const cancelPlane = (): void => {
     options.ifcViewing.value?.clipper.deleteAllPlanes()
     resetTool()
-    options.onResetToolbar()
   }
 
   const switchToolSelection: ISwitchChoice = {
@@ -63,9 +60,9 @@ export const useIfcTools = (options: UseIfcToolsOptions) => {
   }
 
   const toolSelection = (tool = ''): void => {
-    if (activeTools.value === tool) return
+    if (options.activeTool.value === tool) return
     options.onDeactivateNavCube()
-    activeTools.value = tool
+    options.activeTool.value = tool
     if (tool === IFC_VIEWING_TOOLS.navCube) {
       options.onActivateNavCube()
       return
@@ -74,19 +71,18 @@ export const useIfcTools = (options: UseIfcToolsOptions) => {
   }
 
   const setMovingMouse = (): void => {
-    switchMovingMouse[activeTools.value]?.()
+    switchMovingMouse[options.activeTool.value]?.()
   }
 
   const setDoubleChoice = (): void => {
-    if (activeTools.value === IFC_VIEWING_TOOLS.createPlane) createPlane()
+    if (options.activeTool.value === IFC_VIEWING_TOOLS.createPlane) createPlane()
   }
 
   const setRightChoice = (): void => {
-    if (activeTools.value === IFC_VIEWING_TOOLS.createPlane) deletePlane()
+    if (options.activeTool.value === IFC_VIEWING_TOOLS.createPlane) deletePlane()
   }
 
   return {
-    activeTools,
     modelCoordinates,
     toolSelection,
     setMovingMouse,

@@ -11,9 +11,9 @@ import { useNavCube } from '@/composables/useNavCube'
 const props = defineProps<{
   isFullscreen: boolean
 }>()
+const activeTool = defineModel<string>('activeTool', { default: '' })
 const emits = defineEmits<{
   (e: 'set-model', value: IModelLevels[]): void
-  (e: 'start-state-tools'): void
 }>()
 const classIfcViewing = computed((): string =>
   props.isFullscreen ? 'height-full' : 'height-default',
@@ -24,6 +24,7 @@ const classIfcViewingContainer = computed((): string =>
 
 let resetSubsets = (): void => undefined
 let setSpatialStructure = async (): Promise<void> => undefined
+let resetActiveTool = (): void => undefined
 
 const {
   file,
@@ -39,7 +40,7 @@ const {
 } = useIfcViewer({
   onModelReady: () => resetSubsets(),
   onSpatialStructure: () => setSpatialStructure(),
-  onFileSelected: () => emits('start-state-tools'),
+  onFileSelected: () => resetActiveTool(),
 })
 
 const subsets = useIfcSubsets({
@@ -54,7 +55,6 @@ setSpatialStructure = subsets.setSpatialStructure
 const navCube = useNavCube({ ifcViewing, model, container })
 
 const {
-  activeTools,
   modelCoordinates,
   toolSelection,
   setMovingMouse,
@@ -62,10 +62,11 @@ const {
   setRightChoice,
 } = useIfcTools({
   ifcViewing,
-  onResetToolbar: () => emits('start-state-tools'),
+  activeTool,
   onActivateNavCube: navCube.activate,
   onDeactivateNavCube: navCube.deactivate,
 })
+resetActiveTool = () => toolSelection('')
 
 const highlightModelLevel = subsets.highlightModelLevel
 const setLevelHide = subsets.setLevelHide
@@ -97,7 +98,7 @@ onUnmounted(() => {
           </el-button>
         </el-tooltip>
       </div>
-      <el-text v-if="activeTools === IFC_VIEWING_TOOLS.createPlane" type="success" size="small">
+      <el-text v-if="activeTool === IFC_VIEWING_TOOLS.createPlane" type="success" size="small">
         {{ TEXT_HELP_PLANE }}
       </el-text>
       <el-tooltip effect="dark" content="Исходный вид модели Ifc" placement="bottom-end">
@@ -105,7 +106,7 @@ onUnmounted(() => {
       </el-tooltip>
     </div>
     <div
-      v-if="activeTools === IFC_VIEWING_TOOLS.createCoordinates"
+      v-if="activeTool === IFC_VIEWING_TOOLS.createCoordinates"
       class="ifc-viewing__coordinates"
     >
       <span v-for="(coordinate, key) in modelCoordinates" :key="key">

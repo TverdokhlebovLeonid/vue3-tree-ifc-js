@@ -1,39 +1,45 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onUnmounted } from 'vue'
+import { reactive, computed, watch, onUnmounted } from 'vue'
 import { TOOLS } from '@/components/IfcViewing/dataIfcViewing'
 import type { ITools } from '@/types/tools'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 
+const props = withDefaults(
+  defineProps<{
+    activeTool?: string
+  }>(),
+  { activeTool: '' },
+)
 const emits = defineEmits<{
   (e: 'open-fullscreen'): void
   (e: 'tool-selection', value: string): void
 }>()
 
 const toolsButton = reactive<ITools[]>(TOOLS)
-const activeTool = ref<string>('')
-const isCancelAction = computed((): boolean => activeTool.value === IFC_VIEWING_TOOLS.createPlane)
+const isCancelAction = computed((): boolean => props.activeTool === IFC_VIEWING_TOOLS.createPlane)
 
-const setActiveTool = (tool: string = ''): void => {
-  toolsButton.forEach((el) => {
-    el.active = el.tool === tool
-  })
-}
+watch(
+  () => props.activeTool,
+  (tool) => {
+    toolsButton.forEach((el) => {
+      el.active = el.tool === tool
+    })
+  },
+  { immediate: true },
+)
+
 const startStateTools = (): void => {
-  activeTool.value = ''
-  setActiveTool()
   emits('tool-selection', '')
 }
 const setTools = (tool: string): void => {
-  if (tool === activeTool.value) {
+  if (tool === props.activeTool) {
     startStateTools()
     return
   }
   if (tool === IFC_VIEWING_TOOLS.fullScreen) {
-    setFullScreen()
+    emits('open-fullscreen')
     return
   }
-  activeTool.value = tool
-  setActiveTool(tool)
   emits('tool-selection', tool)
 }
 
@@ -45,7 +51,7 @@ const setFullScreen = (): void => {
   emits('open-fullscreen')
 }
 
-defineExpose({ startStateTools, setTools, activeTool, cancelTool, setFullScreen })
+defineExpose({ startStateTools, setTools, cancelTool, setFullScreen })
 onUnmounted(() => {
   startStateTools()
 })
