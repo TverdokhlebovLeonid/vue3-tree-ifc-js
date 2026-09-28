@@ -8,6 +8,7 @@ import type {
   IModelLevels,
   ISubsets,
 } from '@/types/ifc'
+import { collectSpatialLevels } from '@/utils/spatialStructure'
 
 const IFC_TYPES_WITHOUT_MESH = new Set(['IFCSPACE'])
 
@@ -72,8 +73,7 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
 
   const setSpatialStructure = async (): Promise<void> => {
     const structure = await options.ifcViewing.value?.IFC.getSpatialStructure(0)
-    const spatialStructure: IModelElement[] = structure?.children[0]?.children[0].children ?? []
-    await setModelLevels(spatialStructure)
+    await setModelLevels(collectSpatialLevels(structure))
   }
 
   const addHide = async (customID: string): Promise<void> => {
