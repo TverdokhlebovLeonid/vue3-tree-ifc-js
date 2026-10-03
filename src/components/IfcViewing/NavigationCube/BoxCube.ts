@@ -13,77 +13,74 @@ import type {
 import type { IFCModel } from 'web-ifc-three/IFC/components/IFCModel'
 import type { IfcCamera } from 'web-ifc-viewer/dist/components/context/camera/camera'
 
+type FaceSize = [number, number, number]
+
+type CubeFace = {
+  name: string
+  size: FaceSize
+  position: FaceSize
+  label?: FaceSize
+}
+
+const FACES: CubeFace[] = [
+  { name: 'left', size: [96, 96, 16], position: [0, 0, 56], label: [-46, -12, 64] },
+  { name: 'right', size: [96, 96, 16], position: [0, 0, -56], label: [-56, -12, 64] },
+  { name: 'top', size: [96, 16, 96], position: [0, 56, 0], label: [-55, -12, 64] },
+  { name: 'bottom', size: [96, 16, 96], position: [0, -56, 0], label: [-50, -12, 64] },
+  { name: 'front', size: [16, 96, 96], position: [56, 0, 0], label: [-50, -12, 64] },
+  { name: 'back', size: [16, 96, 96], position: [-56, 0, 0], label: [-45, -12, 64] },
+  { name: 'left_front', size: [16, 96, 16], position: [56, 0, 56] },
+  { name: 'left_back', size: [16, 96, 16], position: [-56, 0, 56] },
+  { name: 'right_front', size: [16, 96, 16], position: [56, 0, -56] },
+  { name: 'right_back', size: [16, 96, 16], position: [-56, 0, -56] },
+  { name: 'top_left', size: [96, 16, 16], position: [0, 56, 56] },
+  { name: 'top_right', size: [96, 16, 16], position: [0, 56, -56] },
+  { name: 'top_front', size: [16, 16, 96], position: [56, 56, 0] },
+  { name: 'top_back', size: [16, 16, 96], position: [-56, 56, 0] },
+  { name: 'bottom_left', size: [96, 16, 16], position: [0, -56, 56] },
+  { name: 'bottom_right', size: [96, 16, 16], position: [0, -56, -56] },
+  { name: 'bottom_front', size: [16, 16, 96], position: [56, -56, 0] },
+  { name: 'bottom_back', size: [16, 16, 96], position: [-56, -56, 0] },
+  { name: 'top_left_front', size: [16, 16, 16], position: [56, 56, 56] },
+  { name: 'top_left_back', size: [16, 16, 16], position: [-56, 56, 56] },
+  { name: 'top_right_front', size: [16, 16, 16], position: [56, 56, -56] },
+  { name: 'top_right_back', size: [16, 16, 16], position: [-56, 56, -56] },
+  { name: 'bottom_left_front', size: [16, 16, 16], position: [56, -56, 56] },
+  { name: 'bottom_left_back', size: [16, 16, 16], position: [-56, -56, 56] },
+  { name: 'bottom_right_front', size: [16, 16, 16], position: [56, -56, -56] },
+  { name: 'bottom_right_back', size: [16, 16, 16], position: [-56, -56, -56] },
+]
+
+const FACE_AXIS: Record<string, FaceSize> = {
+  front: [1, 0, 0],
+  back: [-1, 0, 0],
+  top: [0, 1, 0],
+  bottom: [0, -1, 0],
+  left: [0, 0, 1],
+  right: [0, 0, -1],
+}
+
+export const faceDirection = (name: string): FaceSize | null => {
+  const direction: FaceSize = [0, 0, 0]
+  for (const part of name.split('_')) {
+    const axis = FACE_AXIS[part]
+    if (!axis) return null
+    direction[0] += axis[0]
+    direction[1] += axis[1]
+    direction[2] += axis[2]
+  }
+  return direction
+}
+
 export class BoxCube {
   scene: Scene
-  left: Mesh
-  right: Mesh
-  top: Mesh
-  bottom: Mesh
-  front: Mesh
-  back: Mesh
-  left_front: Mesh
-  left_back: Mesh
-  right_front: Mesh
-  right_back: Mesh
-  top_left: Mesh
-  top_right: Mesh
-  top_front: Mesh
-  top_back: Mesh
-  bottom_left: Mesh
-  bottom_right: Mesh
-  bottom_front: Mesh
-  bottom_back: Mesh
-  top_left_front: Mesh
-  top_left_back: Mesh
-  top_right_front: Mesh
-  top_right_back: Mesh
-  bottom_left_front: Mesh
-  bottom_left_back: Mesh
-  bottom_right_front: Mesh
-  bottom_right_back: Mesh
 
   constructor(scene: Scene) {
     this.scene = scene
-    this.left = this.initItem('left', 96, 96, 16, 0, 0, 56)
-    initText3D(this.scene, 'left', -46, -12, 64)
-    this.right = this.initItem('right', 96, 96, 16, 0, 0, -56)
-    initText3D(this.scene, 'right', -56, -12, 64)
-
-    this.top = this.initItem('top', 96, 16, 96, 0, 56, 0)
-    initText3D(this.scene, 'top', -55, -12, 64)
-
-    this.bottom = this.initItem('bottom', 96, 16, 96, 0, -56, 0)
-    initText3D(this.scene, 'bottom', -50, -12, 64)
-
-    this.front = this.initItem('front', 16, 96, 96, 56, 0, 0)
-    initText3D(this.scene, 'front', -50, -12, 64)
-    this.back = this.initItem('back', 16, 96, 96, -56, 0, 0)
-    initText3D(this.scene, 'back', -45, -12, 64)
-
-    this.left_front = this.initItem('left_front', 16, 96, 16, 56, 0, 56)
-    this.left_back = this.initItem('left_back', 16, 96, 16, -56, 0, 56)
-    this.right_front = this.initItem('right_front', 16, 96, 16, 56, 0, -56)
-    this.right_back = this.initItem('right_back', 16, 96, 16, -56, 0, -56)
-
-    this.top_left = this.initItem('top_left', 96, 16, 16, 0, 56, 56)
-    this.top_right = this.initItem('top_right', 96, 16, 16, 0, 56, -56)
-    this.top_front = this.initItem('top_front', 16, 16, 96, 56, 56, 0)
-    this.top_back = this.initItem('top_back', 16, 16, 96, -56, 56, 0)
-
-    this.bottom_left = this.initItem('bottom_left', 96, 16, 16, 0, -56, 56)
-    this.bottom_right = this.initItem('bottom_right', 96, 16, 16, 0, -56, -56)
-    this.bottom_front = this.initItem('bottom_front', 16, 16, 96, 56, -56, 0)
-    this.bottom_back = this.initItem('bottom_back', 16, 16, 96, -56, -56, 0)
-
-    this.top_left_front = this.initItem('top_left_front', 16, 16, 16, 56, 56, 56)
-    this.top_left_back = this.initItem('top_left_back', 16, 16, 16, -56, 56, 56)
-    this.top_right_front = this.initItem('top_right_front', 16, 16, 16, 56, 56, -56)
-    this.top_right_back = this.initItem('top_right_back', 16, 16, 16, -56, 56, -56)
-
-    this.bottom_left_front = this.initItem('bottom_left_front', 16, 16, 16, 56, -56, 56)
-    this.bottom_left_back = this.initItem('bottom_left_back', 16, 16, 16, -56, -56, 56)
-    this.bottom_right_front = this.initItem('bottom_right_front', 16, 16, 16, 56, -56, -56)
-    this.bottom_right_back = this.initItem('bottom_right_back', 16, 16, 16, -56, -56, -56)
+    FACES.forEach((face) => {
+      this.initItem(face.name, ...face.size, ...face.position)
+      if (face.label) initText3D(this.scene, face.name, ...face.label)
+    })
     this.initOutLine()
   }
   initItem(name: string, x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) {
@@ -153,140 +150,14 @@ export function switchPick(camera0: IfcCamera['cameraControls'], ifcModel: IFCMo
     r = ifcModel.geometry.boundingSphere.radius * two
     c = ifcModel.geometry.boundingSphere.center
   }
-  const coords = new Vector3(zero, zero, zero)
-  const switchForPick: ISwitch = {
-    left: () => {
-      coords.x = c.x
-      coords.y = c.y
-      coords.z = r + c.z
-    },
-    right: () => {
-      coords.x = c.x
-      coords.y = c.y
-      coords.z = -r + c.z
-    },
-    top: () => {
-      coords.x = c.x
-      coords.y = r + c.y
-      coords.z = c.z
-    },
-    bottom: () => {
-      coords.x = c.x
-      coords.y = -r + c.y
-      coords.z = c.z
-    },
-    front: () => {
-      coords.x = r + c.x
-      coords.y = c.y
-      coords.z = c.z
-    },
-    back: () => {
-      coords.x = -r + c.x
-      coords.y = c.y
-      coords.z = c.z
-    },
-    left_front: () => {
-      coords.x = r + c.x
-      coords.y = c.y
-      coords.z = r + c.z
-    },
-    left_back: () => {
-      coords.x = -r + c.x
-      coords.y = c.y
-      coords.z = r + c.z
-    },
-    right_front: () => {
-      coords.x = r + c.x
-      coords.y = c.y
-      coords.z = -r + c.z
-    },
-    right_back: () => {
-      coords.x = -r + c.x
-      coords.y = c.y
-      coords.z = -r + c.z
-    },
-    top_left: () => {
-      coords.x = c.x
-      coords.y = r + c.y
-      coords.z = r + c.z
-    },
-    top_right: () => {
-      coords.x = c.x
-      coords.y = r + c.y
-      coords.z = -r + c.z
-    },
-    top_front: () => {
-      coords.x = r + c.x
-      coords.y = r + c.y
-      coords.z = c.z
-    },
-    top_back: () => {
-      coords.x = -r + c.x
-      coords.y = r + c.y
-      coords.z = c.z
-    },
-    bottom_left: () => {
-      coords.x = c.x
-      coords.y = -r + c.y
-      coords.z = r + c.z
-    },
-    bottom_right: () => {
-      coords.x = c.x
-      coords.y = -r + c.y
-      coords.z = -r + c.z
-    },
-    bottom_front: () => {
-      coords.x = r + c.x
-      coords.y = -r + c.y
-      coords.z = c.z
-    },
-    bottom_back: () => {
-      coords.x = -r + c.x
-      coords.y = -r + c.y
-      coords.z = c.z
-    },
-    top_left_front: () => {
-      coords.x = r + c.x
-      coords.y = r + c.y
-      coords.z = r + c.z
-    },
-    top_left_back: () => {
-      coords.x = -r + c.x
-      coords.y = r + c.y
-      coords.z = r + c.z
-    },
-    top_right_front: () => {
-      coords.x = r + c.x
-      coords.y = r + c.y
-      coords.z = -r + c.z
-    },
-    top_right_back: () => {
-      coords.x = -r + c.x
-      coords.y = r + c.y
-      coords.z = -r + c.z
-    },
-    bottom_left_front: () => {
-      coords.x = r + c.x
-      coords.y = -r + c.y
-      coords.z = r + c.z
-    },
-    bottom_left_back: () => {
-      coords.x = -r + c.x
-      coords.y = -r + c.y
-      coords.z = r + c.z
-    },
-    bottom_right_front: () => {
-      coords.x = r + c.x
-      coords.y = -r + c.y
-      coords.z = -r + c.z
-    },
-    bottom_right_back: () => {
-      coords.x = -r + c.x
-      coords.y = -r + c.y
-      coords.z = -r + c.z
-    },
-  }
-  if (switchForPick?.[name]) switchForPick[name]()
+  const direction = faceDirection(name)
+  const coords = direction
+    ? new Vector3(
+        c.x + direction[0] * r,
+        c.y + direction[1] * r,
+        c.z + direction[2] * r,
+      )
+    : new Vector3(zero, zero, zero)
   camera0.setPosition(coords.x, coords.y, coords.z, true)
   camera0.setLookAt(coords.x, coords.y, coords.z, c.x, c.y, c.z, true)
 }
