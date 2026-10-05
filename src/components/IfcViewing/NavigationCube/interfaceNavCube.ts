@@ -4,7 +4,6 @@ import {
   Raycaster,
   MeshBasicMaterial,
   Object3D,
-  MeshLambertMaterial,
 } from 'three'
 import { Font } from '@/components/IfcViewing/NavigationCube/FontLoader'
 import type { IfcCamera } from 'web-ifc-viewer/dist/components/context/camera/camera'
@@ -38,7 +37,6 @@ export interface IOutLine extends LineSegments {
 
 export type IMeshCube = Mesh & {
   textCube?: string
-  material?: MeshLambertMaterial
 }
 
 export interface ISwitch {

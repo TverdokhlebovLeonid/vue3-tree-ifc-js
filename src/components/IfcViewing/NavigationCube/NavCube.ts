@@ -9,6 +9,7 @@ import {
   Vector3,
   WebGLRenderer,
   Camera,
+  Object3D,
 } from 'three'
 import { LightColor, NavCubeMaterial } from '@/components/IfcViewing/NavigationCube/NavCubeMaterial'
 import { BoxCube, switchPick } from '@/components/IfcViewing/NavigationCube/BoxCube'
@@ -16,7 +17,6 @@ import type { IIfcViewerAPI } from '@/types/ifc'
 import type {
   ICamera,
   IRaycaster,
-  IObject3D,
   IMeshCube,
 } from '@/components/IfcViewing/NavigationCube/interfaceNavCube'
 import type { IFCModel } from 'web-ifc-three/IFC/components/IFCModel'
@@ -42,6 +42,9 @@ export class NavCube {
   isKeyMove: boolean
   htmlElementCube: string
   animationFrameId: number
+  pickableMeshes: Object3D[]
+  hoveredMesh: IMeshCube | null
+  lastHoverKey: string
   constructor(viewer: IIfcViewerAPI, htmlElementCube: string) {
     this.viewer = viewer
     this.scene = new Scene()
@@ -83,6 +86,9 @@ export class NavCube {
     this.rayCaster.firstHitOnly = true
     this.mouse = new Vector2()
     this.boxCube = new BoxCube(this.scene)
+    this.pickableMeshes = this.scene.children.filter((child) => child.userData.Element)
+    this.hoveredMesh = null
+    this.lastHoverKey = ''
     this.mouseOn = false
     this.isKeyMove = true
     this.animationFrameId = 0
@@ -127,10 +133,12 @@ export class NavCube {
   onMouseMove = (event: MouseEvent): void => {
     this.cast(event)
     this.mouseOn = true
+    this.updateHover()
   }
 
   onMouseOut = (): void => {
     this.mouseOn = false
+    this.clearHover()
   }
 
   onHover() {
@@ -139,41 +147,43 @@ export class NavCube {
       this.renderer.domElement.addEventListener('mouseout', this.onMouseOut)
     }
   }
-  hover() {
-    const _this = this as this
-    const filterElementHover = _this.scene.children.filter((child) => {
-      return child.userData.Element
-    })
-    if (_this.mouseOn) {
-      _this.rayCaster.setFromCamera(_this.mouse, _this.camera)
-      const intersects = _this.rayCaster.intersectObjects(filterElementHover)
-      const found = intersects[0]
-      if (found) {
-        if (!(found.object as IMeshCube).textCube) {
-          ;(found.object as IMeshCube).material = NavCubeMaterial.hoverCube
-          _this.renderer.domElement.style.cursor = 'pointer'
-        }
-      } else {
-        _this.renderer.domElement.style.cursor = 'default'
-      }
+
+  clearHover(): void {
+    if (this.hoveredMesh) {
+      this.hoveredMesh.material = NavCubeMaterial.normalCube
+      this.hoveredMesh = null
     }
+    this.lastHoverKey = ''
+    this.renderer.domElement.style.cursor = 'default'
   }
-  resetMaterial() {
-    for (let i = 0; i < this.scene.children.length; i++) {
-      if (
-        (this.scene.children as IObject3D[])[i].material &&
-        !(this.scene?.children[i] as IMeshCube).textCube
-      )
-        (this.scene.children as IObject3D[])[i].material = NavCubeMaterial.normalCube
+
+  updateHover(): void {
+    const { x, y, z } = this.camera.rotation
+    const key = `${this.mouse.x}:${this.mouse.y}:${x}:${y}:${z}`
+    if (key === this.lastHoverKey) return
+    this.lastHoverKey = key
+
+    this.rayCaster.setFromCamera(this.mouse, this.camera)
+    const found = this.rayCaster.intersectObjects(this.pickableMeshes)[0]
+    const mesh = found && !(found.object as IMeshCube).textCube ? (found.object as IMeshCube) : null
+    if (mesh === this.hoveredMesh) {
+      this.renderer.domElement.style.cursor = mesh ? 'pointer' : 'default'
+      return
     }
+    if (this.hoveredMesh) this.hoveredMesh.material = NavCubeMaterial.normalCube
+    this.hoveredMesh = mesh
+    if (!mesh) {
+      this.renderer.domElement.style.cursor = 'default'
+      return
+    }
+    mesh.material = NavCubeMaterial.hoverCube
+    this.renderer.domElement.style.cursor = 'pointer'
   }
 
   onPick(ifcModel: IFCModel) {
     const _this = this as this
     const camera = _this.viewer.context.ifcCamera.cameraControls
-    const filterElementClick = _this.scene.children.filter((child) => {
-      return child.userData.Element
-    })
+    const filterElementClick = this.pickableMeshes
     _this.renderer.domElement.onclick = function () {
       if (_this.mouse.x !== 0 || _this.mouse.y !== 0) {
         _this.rayCaster.setFromCamera(_this.mouse, _this.camera)
@@ -207,8 +217,7 @@ export class NavCube {
       this.camera.rotation.y = camera.rotation.y
       this.camera.rotation.z = camera.rotation.z
 
-      this.resetMaterial()
-      this.hover()
+      if (this.mouseOn) this.updateHover()
 
       this.renderer.render(this.scene, this.camera)
     }
