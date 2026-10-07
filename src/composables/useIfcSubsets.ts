@@ -58,7 +58,7 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
       const customID = `${index}-level`
       nextLevels.push({
         ids,
-        check: true,
+        visible: true,
         customID,
         type: element.type,
         children: element.children,
@@ -84,7 +84,7 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
   }
 
   const setLevelHide = (data: IDataLevelHide): void => {
-    if (data.check) {
+    if (data.visible) {
       void addHide(data.customID)
       return
     }

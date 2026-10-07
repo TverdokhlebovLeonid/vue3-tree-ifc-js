@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { IModelLevels, IDataLevelHide } from '@/types/ifc'
+import type { IDataLevelHide, IModelElement, IModelLevels } from '@/types/ifc'
 import { dictionaryIfcViewing, DEFAULT_KEY } from '@/components/IfcViewing/dictionaryIfcViewing'
 
 const modelLevels = ref<IModelLevels[]>([])
@@ -11,14 +11,14 @@ const emits = defineEmits<{
   (e: 'level-hide', value: IDataLevelHide): void
 }>()
 
-const transferLevel = (children: IModelLevels[], id: number): void => {
+const transferLevel = (children: IModelElement[], id: number): void => {
   const level: number[] = []
   if (levelActive.value === id) {
     levelActive.value = null
   } else {
     levelActive.value = id
     children.length
-      ? children.forEach((el: IModelLevels) => {
+      ? children.forEach((el: IModelElement) => {
           level.push(el.expressID)
         })
       : level.push(id)
@@ -26,8 +26,8 @@ const transferLevel = (children: IModelLevels[], id: number): void => {
   emits('transfer-level', level)
 }
 
-const setLevelHide = (customID: string, check: boolean): void => {
-  emits('level-hide', { customID, check })
+const setLevelHide = (customID: string, visible: boolean): void => {
+  emits('level-hide', { customID, visible })
 }
 const setModel = (model: IModelLevels[]): void => {
   levelActive.value = null
@@ -41,11 +41,6 @@ const setElementName = (name: string): string => {
 
 defineExpose({
   setModel,
-  modelLevels,
-  setElementName,
-  levelActive,
-  transferLevel,
-  setLevelHide,
 })
 
 const PROPS_TREE = {
@@ -69,13 +64,13 @@ const PROPS_TREE = {
         <el-tooltip
           v-if="data?.customID"
           effect="dark"
-          :content="data.check ? 'Удалить элемент' : 'Вернуть элемент'"
+          :content="data.visible ? 'Удалить элемент' : 'Вернуть элемент'"
           placement="bottom"
         >
           <el-checkbox
-            v-model="data.check"
+            v-model="data.visible"
             size="large"
-            @change="setLevelHide(data.customID, data.check)"
+            @change="setLevelHide(data.customID, data.visible)"
           />
         </el-tooltip>
         <el-tooltip

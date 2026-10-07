@@ -1,6 +1,6 @@
 export const mockModelLevels = [
   {
-    check: true,
+    visible: true,
     children: [
       { expressID: 8800, type: 'IFCROOF', children: [] },
       { expressID: 8862, type: 'IFCROOF', children: [] },

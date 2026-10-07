@@ -1,54 +1,72 @@
 import { mount } from '@vue/test-utils'
 import IfcViewingRequisites from '@/components/IfcViewing/IfcViewingRequisites.vue'
 import { mockModelLevels } from './dataMock'
-import type { ComponentWrapperType } from './interfaceIfcTests'
+import type { IModelLevels } from '@/types/ifc'
 
-const TEST_ID = 63
+const levelLabel = (component: ReturnType<typeof mount>) =>
+  component.findAll('.el-tree .el-text').find((node) => node.text() !== '')
+
+const mountWithModel = (model: IModelLevels[] = structuredClone(mockModelLevels)) => {
+  const component = mount(IfcViewingRequisites)
+  component.vm.setModel(model)
+  return component
+}
 
 describe('IfcViewingRequisites test component', () => {
-  let component: ComponentWrapperType<InstanceType<typeof IfcViewingRequisites>>
-
-  beforeEach(() => {
-    component = mount(IfcViewingRequisites)
-  })
-
-  it('Snapshot and render component', async () => {
-    component.vm.modelLevels = mockModelLevels
+  it('renders the spatial tree', async () => {
+    const component = mountWithModel()
     await component.vm.$nextTick()
     expect(component.find('.ifc-requisites').find('b').text()).toBe('Реквизиты')
-    expect(component.html()).toMatchSnapshot()
+    expect(component.text()).toContain('Этаж/Уровень')
+    expect(component.find('.el-checkbox').classes()).toContain('is-checked')
   })
 
-  it('Function setElementName', () => {
-    const func = component.vm.setElementName
-    const name = 'IFCBUILDINGSTOREY'
-    expect(func(name)).toBe('Этаж/Уровень')
-    const nameDefault = 'NO_SUCH_NAME'
-    expect(func(nameDefault)).toBe('Элемент')
+  it('labels an unknown type as Элемент', async () => {
+    const [level] = structuredClone(mockModelLevels)
+    const component = mountWithModel([{ ...level, type: 'NO_SUCH_NAME' }])
+    await component.vm.$nextTick()
+    expect(component.text()).toContain('Элемент')
   })
 
-  it('Function setModel', () => {
-    component.vm.setModel(mockModelLevels)
-    expect(component.vm.modelLevels[0].customID).toBe('0-level')
-    expect(component.vm.levelActive).toBe(null)
+  it('clears the highlight when the model is replaced', async () => {
+    const component = mountWithModel()
+    await component.vm.$nextTick()
+    await levelLabel(component)?.trigger('click')
+    expect(component.find('.el-text--danger').exists()).toBe(true)
+
+    component.vm.setModel(structuredClone(mockModelLevels))
+    await component.vm.$nextTick()
+    expect(component.find('.el-text--danger').exists()).toBe(false)
   })
 
-  it('Function transferLevel', () => {
-    component.vm.levelActive = TEST_ID
-    component.vm.transferLevel(mockModelLevels, TEST_ID)
-    expect(component.vm.levelActive).toBe(null)
-    expect(component.emitted('transfer-level')?.[0]).toEqual([[]])
+  it('highlights a level and clears it on the second click', async () => {
+    const component = mountWithModel()
+    await component.vm.$nextTick()
+    const label = levelLabel(component)
+    await label?.trigger('click')
+    expect(component.emitted('transfer-level')?.[0]).toEqual([[8800, 8862, 8928]])
+    expect(component.find('.el-text--danger').exists()).toBe(true)
+
+    await label?.trigger('click')
+    expect(component.emitted('transfer-level')?.[1]).toEqual([[]])
+    expect(component.find('.el-text--danger').exists()).toBe(false)
   })
 
-  it('Function transferLevel(same id)', () => {
-    component.vm.levelActive = 50
-    component.vm.transferLevel(mockModelLevels, TEST_ID)
-    expect(component.vm.levelActive).toBe(TEST_ID)
-    expect(component.emitted('transfer-level')?.[0]).toEqual([[TEST_ID]])
+  it('highlights a level without children by its own id', async () => {
+    const [level] = structuredClone(mockModelLevels)
+    const component = mountWithModel([{ ...level, children: [] }])
+    await component.vm.$nextTick()
+    await levelLabel(component)?.trigger('click')
+    expect(component.emitted('transfer-level')?.[0]).toEqual([[63]])
   })
 
-  it('Function setLevelHide', () => {
-    component.vm.setLevelHide('50', true)
-    expect(component.emitted('level-hide')?.[0]).toEqual([{ customID: '50', check: true }])
+  it('emits visibility when the checkbox changes', async () => {
+    const component = mountWithModel()
+    await component.vm.$nextTick()
+    await component.get('input[type="checkbox"]').setValue(false)
+    expect(component.emitted('level-hide')?.[0]).toEqual([{ customID: '0-level', visible: false }])
+
+    await component.get('input[type="checkbox"]').setValue(true)
+    expect(component.emitted('level-hide')?.[1]).toEqual([{ customID: '0-level', visible: true }])
   })
 })

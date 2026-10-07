@@ -10,8 +10,8 @@ export interface ISubsets {
 }
 
 export interface IDataLevelHide {
-  check: boolean
   customID: string
+  visible: boolean
 }
 
 export interface IModelElement {
@@ -22,7 +22,7 @@ export interface IModelElement {
 
 export interface IModelLevels {
   ids: number[]
-  check: boolean
+  visible: boolean
   customID: string
   type?: string
   children?: IModelElement[]
