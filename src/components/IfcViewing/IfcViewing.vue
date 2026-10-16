@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onUnmounted } from 'vue'
-import type { IModelLevels } from '@/types/ifc'
+import { computed, nextTick, onUnmounted, watch } from 'vue'
+import type { IDataLevelHide, IModelLevels } from '@/types/ifc'
 import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
 import { TEXT_HELP_PLANE } from '@/components/IfcViewing/dataIfcViewing'
 import { useIfcViewer } from '@/composables/useIfcViewer'
@@ -10,6 +10,9 @@ import { useNavCube } from '@/composables/useNavCube'
 
 const props = defineProps<{
   isFullscreen: boolean
+  toolCommand: { key: number; name: string } | null
+  levelHighlight: number[] | null
+  levelVisibility: IDataLevelHide | null
 }>()
 const activeTool = defineModel<string>('activeTool', { default: '' })
 const emits = defineEmits<{
@@ -71,12 +74,34 @@ resetActiveTool = () => toolSelection('')
 const highlightModelLevel = subsets.highlightModelLevel
 const setLevelHide = subsets.setLevelHide
 
-defineExpose({
-  highlightModelLevel,
-  setLevelHide,
-  toolSelection,
-  resizeViewer,
-})
+watch(
+  () => props.toolCommand,
+  (command) => {
+    if (!command) return
+    toolSelection(command.name)
+  },
+)
+watch(
+  () => props.levelHighlight,
+  (level) => {
+    if (level == null) return
+    highlightModelLevel(level)
+  },
+)
+watch(
+  () => props.levelVisibility,
+  (level) => {
+    if (!level) return
+    setLevelHide(level)
+  },
+)
+watch(
+  () => props.isFullscreen,
+  (isFullscreen) => {
+    if (isFullscreen) return
+    nextTick(() => resizeViewer())
+  },
+)
 onUnmounted(() => {
   navCube.deactivate()
   subsets.resetSubsets()

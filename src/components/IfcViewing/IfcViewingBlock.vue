@@ -1,44 +1,43 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
 import IfcViewing from '@/components/IfcViewing/IfcViewing.vue'
 import IfcViewingTools from '@/components/IfcViewing/IfcViewingTools.vue'
 import IfcViewingRequisites from '@/components/IfcViewing/IfcViewingRequisites.vue'
 import { useFullscreen } from '@/composables/useFullscreen'
 import type { IModelLevels, IDataLevelHide } from '@/types/ifc'
 
-const childViewer = ref<InstanceType<typeof IfcViewing> | null>(null)
 const activeTool = ref('')
-const { isFullscreen, toggle: openFullscreen, close: closeButtonFullscreen } = useFullscreen({
-  onExit: () => {
-    nextTick(() => {
-      childViewer.value?.resizeViewer()
-    })
-  },
-})
-const toolSelection = (tool: string): void => {
-  childViewer.value?.toolSelection(tool)
-}
+const modelLevels = ref<IModelLevels[]>([])
+const levelHighlight = ref<number[] | null>(null)
+const levelVisibility = ref<IDataLevelHide | null>(null)
+const toolCommand = ref<{ key: number; name: string } | null>(null)
+let toolCommandKey = 0
+const { isFullscreen, toggle: openFullscreen, close: closeButtonFullscreen } = useFullscreen()
 
-const highlightModelLevel = (level: number[]): void => {
-  childViewer.value?.highlightModelLevel(level)
+const onToolSelection = (tool: string): void => {
+  toolCommandKey += 1
+  toolCommand.value = { key: toolCommandKey, name: tool }
 }
-const setLevelHide = (data: IDataLevelHide): void => {
-  childViewer.value?.setLevelHide(data)
+const onTransferLevel = (level: number[]): void => {
+  levelHighlight.value = level
 }
-
-const ifcViewingRequisites = ref<InstanceType<typeof IfcViewingRequisites> | null>(null)
-const setModel = (model: IModelLevels[]): void => {
-  ifcViewingRequisites.value?.setModel(model)
+const onLevelHide = (data: IDataLevelHide): void => {
+  levelVisibility.value = data
+}
+const onSetModel = (model: IModelLevels[]): void => {
+  modelLevels.value = model
 }
 </script>
 
 <template>
   <div class="ifc-viewing-block" :class="{ 'ifc-viewing-block__fullscreen': isFullscreen }">
     <IfcViewing
-      ref="childViewer"
       v-model:active-tool="activeTool"
       :is-fullscreen="isFullscreen"
-      @set-model="setModel"
+      :tool-command="toolCommand"
+      :level-highlight="levelHighlight"
+      :level-visibility="levelVisibility"
+      @set-model="onSetModel"
     />
     <div
       class="ifc-viewing-block__control-panel"
@@ -46,14 +45,14 @@ const setModel = (model: IModelLevels[]): void => {
     >
       <IfcViewingTools
         :active-tool="activeTool"
-        @tool-selection="toolSelection"
+        @tool-selection="onToolSelection"
         @open-fullscreen="openFullscreen"
       />
       <IfcViewingRequisites
         v-show="!isFullscreen"
-        ref="ifcViewingRequisites"
-        @transfer-level="highlightModelLevel"
-        @level-hide="setLevelHide"
+        :model-levels="modelLevels"
+        @transfer-level="onTransferLevel"
+        @level-hide="onLevelHide"
       />
       <el-button
         v-if="isFullscreen"

@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { IDataLevelHide, IModelElement, IModelLevels } from '@/types/ifc'
 import { dictionaryIfcViewing, DEFAULT_KEY } from '@/components/IfcViewing/dictionaryIfcViewing'
 
-const modelLevels = ref<IModelLevels[]>([])
+const props = defineProps<{
+  modelLevels: IModelLevels[]
+}>()
 const levelActive = ref<number | null>(null)
+
+watch(
+  () => props.modelLevels,
+  () => {
+    levelActive.value = null
+  },
+)
 
 const emits = defineEmits<{
   (e: 'transfer-level', value: number[]): void
@@ -29,19 +38,11 @@ const transferLevel = (children: IModelElement[], id: number): void => {
 const setLevelHide = (customID: string, visible: boolean): void => {
   emits('level-hide', { customID, visible })
 }
-const setModel = (model: IModelLevels[]): void => {
-  levelActive.value = null
-  modelLevels.value = model
-}
 
 const setElementName = (name: string): string => {
   const key = dictionaryIfcViewing[name] ? name : DEFAULT_KEY
   return dictionaryIfcViewing[key]
 }
-
-defineExpose({
-  setModel,
-})
 
 const PROPS_TREE = {
   value: 'expressID',

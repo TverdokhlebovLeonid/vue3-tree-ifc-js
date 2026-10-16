@@ -6,11 +6,8 @@ import type { IModelLevels } from '@/types/ifc'
 const levelLabel = (component: ReturnType<typeof mount>) =>
   component.findAll('.el-tree .el-text').find((node) => node.text() !== '')
 
-const mountWithModel = (model: IModelLevels[] = structuredClone(mockModelLevels)) => {
-  const component = mount(IfcViewingRequisites)
-  component.vm.setModel(model)
-  return component
-}
+const mountWithModel = (model: IModelLevels[] = structuredClone(mockModelLevels)) =>
+  mount(IfcViewingRequisites, { props: { modelLevels: model } })
 
 describe('IfcViewingRequisites test component', () => {
   it('renders the spatial tree', async () => {
@@ -34,7 +31,7 @@ describe('IfcViewingRequisites test component', () => {
     await levelLabel(component)?.trigger('click')
     expect(component.find('.el-text--danger').exists()).toBe(true)
 
-    component.vm.setModel(structuredClone(mockModelLevels))
+    await component.setProps({ modelLevels: structuredClone(mockModelLevels) })
     await component.vm.$nextTick()
     expect(component.find('.el-text--danger').exists()).toBe(false)
   })
