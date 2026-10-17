@@ -1,8 +1,8 @@
 import { shallowRef } from 'vue'
 import type { Ref, ShallowRef } from 'vue'
 import type { IFCModel } from 'web-ifc-three/IFC/components/IFCModel'
-import type { IIfcViewerAPI } from '@/types/ifc'
-import { NavCube } from '@/components/IfcViewing/NavigationCube/NavCube'
+import type { IIfcViewerAPI } from '@/features/ifc-viewing/types/ifc'
+import { NavCube } from '@/features/ifc-viewing/navigation-cube/NavCube'
 
 const HTML_ELEMENT_CUBE = '.ifc-viewing__container_cube'
 

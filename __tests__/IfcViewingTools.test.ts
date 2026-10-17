@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
-import IfcViewingTools from '@/components/IfcViewing/IfcViewingTools.vue'
-import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
+import IfcViewingTools from '@/features/ifc-viewing/components/IfcViewingTools.vue'
+import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
 import type { ComponentWrapperType } from './interfaceIfcTests'
 
 describe('IfcViewingTools test component', () => {

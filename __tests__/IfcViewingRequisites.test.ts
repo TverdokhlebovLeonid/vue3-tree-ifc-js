@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
-import IfcViewingRequisites from '@/components/IfcViewing/IfcViewingRequisites.vue'
+import IfcViewingRequisites from '@/features/ifc-viewing/components/IfcViewingRequisites.vue'
 import { mockModelLevels } from './dataMock'
-import type { IModelLevels } from '@/types/ifc'
+import type { IModelLevels } from '@/features/ifc-viewing/types/ifc'
 
 const levelLabel = (component: ReturnType<typeof mount>) =>
   component.findAll('.el-tree .el-text').find((node) => node.text() !== '')

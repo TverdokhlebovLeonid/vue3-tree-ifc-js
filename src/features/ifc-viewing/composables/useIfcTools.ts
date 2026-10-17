@@ -1,7 +1,7 @@
 import { ref, type Ref, type ShallowRef } from 'vue'
-import type { IIfcViewerAPI, IModelCoordinates } from '@/types/ifc'
-import type { ISwitchChoice } from '@/types/tools'
-import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
+import type { IIfcViewerAPI, IModelCoordinates } from '@/features/ifc-viewing/types/ifc'
+import type { ISwitchChoice } from '@/features/ifc-viewing/types/tools'
+import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
 
 type UseIfcToolsOptions = {
   ifcViewing: ShallowRef<IIfcViewerAPI | undefined>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { IDataLevelHide, IModelElement, IModelLevels } from '@/types/ifc'
-import { dictionaryIfcViewing, DEFAULT_KEY } from '@/components/IfcViewing/dictionaryIfcViewing'
+import type { IDataLevelHide, IModelElement, IModelLevels } from '@/features/ifc-viewing/types/ifc'
+import { dictionaryIfcViewing, DEFAULT_KEY } from '@/features/ifc-viewing/components/dictionaryIfcViewing'
 
 const props = defineProps<{
   modelLevels: IModelLevels[]

@@ -1,5 +1,5 @@
-import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
-import type { ITools } from '@/types/tools'
+import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
+import type { ITools } from '@/features/ifc-viewing/types/tools'
 
 export const TOOLS: ITools[] = [
   {

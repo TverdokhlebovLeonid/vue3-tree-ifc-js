@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import IfcViewingBlock from '@/components/IfcViewing/IfcViewingBlock.vue'
+import IfcViewingBlock from '@/features/ifc-viewing/components/IfcViewingBlock.vue'
 </script>
 
 <template>

@@ -7,8 +7,8 @@ import type {
   IModelElement,
   IModelLevels,
   ISubsets,
-} from '@/types/ifc'
-import { collectSpatialLevels } from '@/utils/spatialStructure'
+} from '@/features/ifc-viewing/types/ifc'
+import { collectSpatialLevels } from '@/features/ifc-viewing/utils/spatialStructure'
 
 const IFC_TYPES_WITHOUT_MESH = new Set(['IFCSPACE'])
 

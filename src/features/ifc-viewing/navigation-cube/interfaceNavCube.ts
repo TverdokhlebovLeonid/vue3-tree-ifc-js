@@ -5,9 +5,9 @@ import {
   MeshBasicMaterial,
   Object3D,
 } from 'three'
-import { Font } from '@/components/IfcViewing/NavigationCube/FontLoader'
+import { Font } from '@/features/ifc-viewing/navigation-cube/FontLoader'
 import type { IfcCamera } from 'web-ifc-viewer/dist/components/context/camera/camera'
-import fontJSON from '@/components/IfcViewing/NavigationCube/droid_sans_regular.typeface.json'
+import fontJSON from '@/features/ifc-viewing/navigation-cube/droid_sans_regular.typeface.json'
 
 export type ICamera = IfcCamera['activeCamera'] & {
   isPerspectiveCamera?: boolean

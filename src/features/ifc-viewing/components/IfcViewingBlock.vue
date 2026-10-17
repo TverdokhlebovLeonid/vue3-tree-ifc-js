@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import IfcViewing from '@/components/IfcViewing/IfcViewing.vue'
-import IfcViewingTools from '@/components/IfcViewing/IfcViewingTools.vue'
-import IfcViewingRequisites from '@/components/IfcViewing/IfcViewingRequisites.vue'
-import { useFullscreen } from '@/composables/useFullscreen'
-import type { IModelLevels, IDataLevelHide } from '@/types/ifc'
+import IfcViewing from '@/features/ifc-viewing/components/IfcViewing.vue'
+import IfcViewingTools from '@/features/ifc-viewing/components/IfcViewingTools.vue'
+import IfcViewingRequisites from '@/features/ifc-viewing/components/IfcViewingRequisites.vue'
+import { useFullscreen } from '@/features/ifc-viewing/composables/useFullscreen'
+import type { IModelLevels, IDataLevelHide } from '@/features/ifc-viewing/types/ifc'
 
 const activeTool = ref('')
 const modelLevels = ref<IModelLevels[]>([])

@@ -11,14 +11,14 @@ import {
   Camera,
   Object3D,
 } from 'three'
-import { LightColor, NavCubeMaterial } from '@/components/IfcViewing/NavigationCube/NavCubeMaterial'
-import { BoxCube, switchPick } from '@/components/IfcViewing/NavigationCube/BoxCube'
-import type { IIfcViewerAPI } from '@/types/ifc'
+import { LightColor, NavCubeMaterial } from '@/features/ifc-viewing/navigation-cube/NavCubeMaterial'
+import { BoxCube, switchPick } from '@/features/ifc-viewing/navigation-cube/BoxCube'
+import type { IIfcViewerAPI } from '@/features/ifc-viewing/types/ifc'
 import type {
   ICamera,
   IRaycaster,
   IMeshCube,
-} from '@/components/IfcViewing/NavigationCube/interfaceNavCube'
+} from '@/features/ifc-viewing/navigation-cube/interfaceNavCube'
 import type { IFCModel } from 'web-ifc-three/IFC/components/IFCModel'
 
 export class NavCube {

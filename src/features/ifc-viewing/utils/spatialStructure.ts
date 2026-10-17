@@ -1,4 +1,4 @@
-import type { IModelElement } from '@/types/ifc'
+import type { IModelElement } from '@/features/ifc-viewing/types/ifc'
 
 const isStorey = (element: IModelElement): boolean => element.type === 'IFCBUILDINGSTOREY'
 

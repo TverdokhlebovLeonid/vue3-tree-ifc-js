@@ -1,5 +1,5 @@
 import { onScopeDispose, ref } from 'vue'
-import type { IWebkitDocument, IWebkitHTMLElement } from '@/types/fullscreen'
+import type { IWebkitDocument, IWebkitHTMLElement } from '@/features/ifc-viewing/types/fullscreen'
 
 const FULLSCREEN_EVENTS = ['fullscreenchange', 'webkitfullscreenchange'] as const
 

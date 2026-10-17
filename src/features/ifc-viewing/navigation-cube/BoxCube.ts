@@ -1,15 +1,15 @@
-import fontJSON from '@/components/IfcViewing/NavigationCube/droid_sans_regular.typeface.json'
+import fontJSON from '@/features/ifc-viewing/navigation-cube/droid_sans_regular.typeface.json'
 import { BoxGeometry, EdgesGeometry, LineSegments, Mesh, Vector3, type Scene } from 'three'
-import { Font } from '@/components/IfcViewing/NavigationCube/FontLoader'
-import { TextGeometry } from '@/components/IfcViewing/NavigationCube/TextGeometry'
-import { NavCubeMaterial } from '@/components/IfcViewing/NavigationCube/NavCubeMaterial'
+import { Font } from '@/features/ifc-viewing/navigation-cube/FontLoader'
+import { TextGeometry } from '@/features/ifc-viewing/navigation-cube/TextGeometry'
+import { NavCubeMaterial } from '@/features/ifc-viewing/navigation-cube/NavCubeMaterial'
 import type {
   IParameters,
   IMeshCube,
   IOutLine,
   ISwitch,
   INameTextCube,
-} from '@/components/IfcViewing/NavigationCube/interfaceNavCube'
+} from '@/features/ifc-viewing/navigation-cube/interfaceNavCube'
 import type { IFCModel } from 'web-ifc-three/IFC/components/IFCModel'
 import type { IfcCamera } from 'web-ifc-viewer/dist/components/context/camera/camera'
 

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, watch } from 'vue'
-import type { IDataLevelHide, IModelLevels } from '@/types/ifc'
-import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
-import { TEXT_HELP_PLANE } from '@/components/IfcViewing/dataIfcViewing'
-import { useIfcViewer } from '@/composables/useIfcViewer'
-import { useIfcSubsets } from '@/composables/useIfcSubsets'
-import { useIfcTools } from '@/composables/useIfcTools'
-import { useNavCube } from '@/composables/useNavCube'
+import type { IDataLevelHide, IModelLevels } from '@/features/ifc-viewing/types/ifc'
+import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
+import { TEXT_HELP_PLANE } from '@/features/ifc-viewing/components/dataIfcViewing'
+import { useIfcViewer } from '@/features/ifc-viewing/composables/useIfcViewer'
+import { useIfcSubsets } from '@/features/ifc-viewing/composables/useIfcSubsets'
+import { useIfcTools } from '@/features/ifc-viewing/composables/useIfcTools'
+import { useNavCube } from '@/features/ifc-viewing/composables/useNavCube'
 
 const props = defineProps<{
   isFullscreen: boolean

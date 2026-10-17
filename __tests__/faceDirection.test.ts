@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { faceDirection } from '@/components/IfcViewing/NavigationCube/BoxCube'
+import { faceDirection } from '@/features/ifc-viewing/navigation-cube/BoxCube'
 
 describe('faceDirection', () => {
   it('keeps the six face axes', () => {

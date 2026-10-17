@@ -4,7 +4,7 @@ import type {
   IFontJSON,
   IFontJSONGlyphs,
   IFontGlyphs,
-} from '@/components/IfcViewing/NavigationCube/interfaceNavCube'
+} from '@/features/ifc-viewing/navigation-cube/interfaceNavCube'
 
 export class Font {
   type: string

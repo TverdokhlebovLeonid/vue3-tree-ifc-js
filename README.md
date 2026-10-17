@@ -42,10 +42,15 @@ To load your own model, use the file picker in the viewer UI — only `.ifc` fil
 
 ```
 src/
-├── components/IfcViewing/   # IFC viewer, tools, navigation cube, requisites
+├── features/ifc-viewing/    # IFC viewer
+│   ├── components/          # viewer, tools, requisites
+│   ├── composables/
+│   ├── constants/
+│   ├── navigation-cube/
+│   ├── types/
+│   └── utils/
 ├── views/                   # application screens
-├── layouts/                 # page layouts
-└── constants/               # viewer tool constants
+└── layouts/                 # page layouts
 public/
 └── ifc/                     # demo IFC model
 ```

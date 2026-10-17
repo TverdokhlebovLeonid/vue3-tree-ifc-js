@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { reactive, computed, watch, onUnmounted } from 'vue'
-import { TOOLS } from '@/components/IfcViewing/dataIfcViewing'
-import type { ITools } from '@/types/tools'
-import { IFC_VIEWING_TOOLS } from '@/constants/ifcViewingTools'
+import { TOOLS } from '@/features/ifc-viewing/components/dataIfcViewing'
+import type { ITools } from '@/features/ifc-viewing/types/tools'
+import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
 
 const props = withDefaults(
   defineProps<{

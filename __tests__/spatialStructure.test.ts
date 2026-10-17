@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { IModelElement } from '@/types/ifc'
-import { collectSpatialLevels } from '@/utils/spatialStructure'
+import type { IModelElement } from '@/features/ifc-viewing/types/ifc'
+import { collectSpatialLevels } from '@/features/ifc-viewing/utils/spatialStructure'
 
 const node = (type: string, children: IModelElement[] = []): IModelElement => ({
   expressID: type.length,

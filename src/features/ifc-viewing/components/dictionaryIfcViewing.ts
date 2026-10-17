@@ -1,4 +1,4 @@
-import type { IDictionaryIfcViewing } from '@/types/ifc'
+import type { IDictionaryIfcViewing } from '@/features/ifc-viewing/types/ifc'
 
 export const DEFAULT_KEY = 'DEFAULT'
 export const dictionaryIfcViewing: IDictionaryIfcViewing = {

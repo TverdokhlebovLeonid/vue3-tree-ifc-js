@@ -1,5 +1,5 @@
 import { BufferGeometry, ExtrudeGeometry } from 'three'
-import type { IParameters } from '@/components/IfcViewing/NavigationCube/interfaceNavCube'
+import type { IParameters } from '@/features/ifc-viewing/navigation-cube/interfaceNavCube'
 
 class TextGeometry extends ExtrudeGeometry {
   constructor(text: string, parameters: IParameters) {
