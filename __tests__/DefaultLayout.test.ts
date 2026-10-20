@@ -1,16 +1,19 @@
 import { mount } from '@vue/test-utils'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import type { ComponentWrapperType } from './interfaceIfcTests'
-import { mockSlot, mockRoute } from './dataMock'
+import { mockSlot } from './dataMock'
+
+vi.mock('vue-router', async () => {
+  const { mockRoute } = await import('./dataMock')
+  return {
+    useRoute: () => mockRoute,
+  }
+})
 
 describe('DefaultLayout test component', () => {
   let component: ComponentWrapperType<InstanceType<typeof DefaultLayout>>
 
   beforeEach(() => {
-    vi.mock('vue-router', () => ({
-      useRoute: () => mockRoute,
-    }))
-
     component = mount(DefaultLayout, mockSlot)
   })
 
