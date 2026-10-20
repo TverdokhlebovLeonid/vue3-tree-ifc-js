@@ -113,7 +113,7 @@ onUnmounted(() => {
   <div class="ifc-viewing" :class="classIfcViewing">
     <div class="ifc-viewing__buttons">
       <div class="ifc-viewing__buttons_upload">
-        <el-tooltip effect="dark" content="Загрузити свой файл формата ifc">
+        <el-tooltip effect="dark" content="Загрузить свой файл формата IFC">
           <el-button type="primary" link>
             <label for="inputFile">
               <input id="inputFile" ref="file" type="file" hidden @change="handleFileUpload" />
@@ -126,7 +126,7 @@ onUnmounted(() => {
       <el-text v-if="activeTool === IFC_VIEWING_TOOLS.createPlane" type="success" size="small">
         {{ TEXT_HELP_PLANE }}
       </el-text>
-      <el-tooltip effect="dark" content="Исходный вид модели Ifc" placement="bottom-end">
+      <el-tooltip effect="dark" content="Исходный вид модели IFC" placement="bottom-end">
         <el-button type="primary" size="small" plain icon="Refresh" @click="resetView" />
       </el-tooltip>
     </div>
@@ -144,7 +144,7 @@ onUnmounted(() => {
       tabindex="0"
       :class="classIfcViewingContainer"
       @mousemove="setMovingMouse"
-      @click.right="setRightChoice"
+      @contextmenu.prevent="setRightChoice"
       @dblclick="setDoubleChoice"
     >
       <div class="ifc-viewing__container_cube" />
@@ -187,7 +187,7 @@ onUnmounted(() => {
   display: flex
   align-items: center
   justify-content: center
-  height: 100VH
+  height: 100vh
 .height-full
   height: 100%
 .height-default

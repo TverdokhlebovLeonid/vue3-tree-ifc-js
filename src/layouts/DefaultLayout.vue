@@ -22,7 +22,7 @@ const title = computed((): string => (route?.meta?.title as string) || '')
 <style scoped lang="sass">
 .default-layout
   background-color: $color-bg-light
-  height: 100VH
+  height: 100vh
   border-radius: 5px
   .el-header
     margin-bottom: 20px
