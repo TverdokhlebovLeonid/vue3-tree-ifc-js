@@ -22,6 +22,11 @@ const spatialRoot = (): IModelElement => ({
               children: [
                 { expressID: 100, type: 'IFCWALL', children: [] },
                 { expressID: 101, type: 'IFCSPACE', children: [] },
+                {
+                  expressID: 102,
+                  type: 'IFCELEMENTASSEMBLY',
+                  children: [{ expressID: 103, type: 'IFCSTAIRFLIGHT', children: [] }],
+                },
               ],
             },
             { expressID: 11, type: 'IFCGRID', children: [] },
@@ -57,16 +62,16 @@ const createHarness = (modelID: number | null = 7) => {
 }
 
 describe('useIfcSubsets', () => {
-  it('builds levels from the spatial structure and skips spaces', async () => {
+  it('builds levels with nested elements and skips spaces', async () => {
     const { subsets, createSubset, getSpatialStructure, onLevels, scene } = createHarness()
     await subsets.setSpatialStructure()
 
-    expect(getSpatialStructure).toHaveBeenCalledWith(0)
+    expect(getSpatialStructure).toHaveBeenCalledWith(7)
     expect(onLevels).toHaveBeenCalledWith([
       expect.objectContaining({
         customID: '0-level',
         expressID: 10,
-        ids: [100],
+        ids: [100, 102, 103],
         visible: true,
         type: 'IFCBUILDINGSTOREY',
       }),
@@ -81,7 +86,7 @@ describe('useIfcSubsets', () => {
     expect(createSubset).toHaveBeenNthCalledWith(1, {
       modelID: 7,
       scene: scene.value,
-      ids: [100],
+      ids: [100, 102, 103],
       removePrevious: true,
       customID: '0-level',
     })
@@ -109,7 +114,8 @@ describe('useIfcSubsets', () => {
     harness.subsets.setLevelHide({ customID: '0-level', visible: false })
     harness.subsets.highlightModelLevel([100])
 
-    expect(harness.onLevels).toHaveBeenCalled()
+    expect(harness.getSpatialStructure).not.toHaveBeenCalled()
+    expect(harness.onLevels).toHaveBeenCalledWith([])
     expect(harness.createSubset).not.toHaveBeenCalled()
     expect(harness.removeSubset).not.toHaveBeenCalled()
     expect(harness.pickIfcItemsByID).not.toHaveBeenCalled()
@@ -125,18 +131,19 @@ describe('useIfcSubsets', () => {
     await flushPromises()
     expect(harness.removeSubset).toHaveBeenCalledTimes(2)
     expect(harness.createSubset).toHaveBeenLastCalledWith(
-      expect.objectContaining({ customID: '0-level', ids: [100] }),
+      expect.objectContaining({ customID: '0-level', ids: [100, 102, 103] }),
     )
   })
 
-  it('clears stored levels before a later show', async () => {
+  it('ignores a level that is no longer loaded', async () => {
     const harness = createHarness()
     await harness.subsets.setSpatialStructure()
     harness.subsets.resetSubsets()
     harness.subsets.setLevelHide({ customID: '0-level', visible: true })
     await flushPromises()
 
-    expect(harness.createSubset).toHaveBeenLastCalledWith(expect.objectContaining({ ids: [] }))
+    expect(harness.createSubset).toHaveBeenCalledTimes(2)
+    expect(harness.removeSubset).not.toHaveBeenCalled()
   })
 
   it('highlights express ids of the active level', async () => {

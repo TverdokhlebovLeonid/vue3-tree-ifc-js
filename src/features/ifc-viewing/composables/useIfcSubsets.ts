@@ -6,11 +6,11 @@ import type {
   IIfcViewerAPI,
   IModelElement,
   IModelLevels,
-  ISubsets,
 } from '@/features/ifc-viewing/types/ifc'
-import { collectSpatialLevels } from '@/features/ifc-viewing/utils/spatialStructure'
-
-const IFC_TYPES_WITHOUT_MESH = new Set(['IFCSPACE'])
+import {
+  collectSpatialLevels,
+  collectSubsetIds,
+} from '@/features/ifc-viewing/utils/spatialStructure'
 
 type UseIfcSubsetsOptions = {
   ifcViewing: ShallowRef<IIfcViewerAPI | undefined>
@@ -21,19 +21,15 @@ type UseIfcSubsetsOptions = {
 
 export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
   const modelLevels = ref<IModelLevels[]>([])
-  const subsets: ISubsets = {}
 
   const resetSubsets = (): void => {
-    for (const customID of Object.keys(subsets)) {
-      delete subsets[customID]
-    }
     modelLevels.value = []
   }
 
-  const newSubsetOfType = (ids: number[], customID: string) => {
+  const newSubsetOfType = (ids: number[], customID: string): void => {
     const modelID = options.getModelID()
     if (modelID == null) return
-    return options.ifcViewing.value?.IFC.loader.ifcManager.createSubset({
+    options.ifcViewing.value?.IFC.loader.ifcManager.createSubset({
       modelID,
       scene: options.scene.value,
       ids,
@@ -48,13 +44,11 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
     options.ifcViewing.value?.IFC.loader.ifcManager.removeSubset(modelID, undefined, customID)
   }
 
-  const setModelLevels = async (elements: IModelElement[]): Promise<void> => {
+  const setModelLevels = (elements: IModelElement[]): void => {
     const nextLevels: IModelLevels[] = []
     for (const [index, element] of elements.entries()) {
       if (!('children' in element)) continue
-      const ids = element.children
-        .filter((el: IModelElement) => !IFC_TYPES_WITHOUT_MESH.has(el.type))
-        .map((el: IModelElement) => el.expressID)
+      const ids = collectSubsetIds(element)
       const customID = `${index}-level`
       nextLevels.push({
         ids,
@@ -64,28 +58,29 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
         children: element.children,
         expressID: element.expressID,
       })
-      const subset = await newSubsetOfType(ids, customID)
-      if (subset) subsets[customID] = subset
+      newSubsetOfType(ids, customID)
     }
     modelLevels.value = nextLevels
     options.onLevels(nextLevels)
   }
 
   const setSpatialStructure = async (): Promise<void> => {
-    const structure = await options.ifcViewing.value?.IFC.getSpatialStructure(0)
-    await setModelLevels(collectSpatialLevels(structure))
+    const modelID = options.getModelID()
+    const structure =
+      modelID == null ? null : await options.ifcViewing.value?.IFC.getSpatialStructure(modelID)
+    setModelLevels(collectSpatialLevels(structure))
   }
 
-  const addHide = async (customID: string): Promise<void> => {
-    const ids = modelLevels.value.find((level) => level.customID === customID)?.ids || []
+  const addHide = (customID: string): void => {
+    const level = modelLevels.value.find((item) => item.customID === customID)
+    if (!level) return
     removeSubset(customID)
-    const subset = await newSubsetOfType(ids, customID)
-    if (subset) subsets[customID] = subset
+    newSubsetOfType(level.ids, customID)
   }
 
   const setLevelHide = (data: IDataLevelHide): void => {
     if (data.visible) {
-      void addHide(data.customID)
+      addHide(data.customID)
       return
     }
     removeSubset(data.customID)

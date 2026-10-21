@@ -1,12 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import type { IModelElement } from '@/features/ifc-viewing/types/ifc'
-import { collectSpatialLevels } from '@/features/ifc-viewing/utils/spatialStructure'
+import {
+  collectSpatialLevels,
+  collectSubsetIds,
+} from '@/features/ifc-viewing/utils/spatialStructure'
 
 const node = (type: string, children: IModelElement[] = []): IModelElement => ({
   expressID: type.length,
   type,
   children,
 })
+
+const element = (
+  expressID: number,
+  type: string,
+  children: IModelElement[] = [],
+): IModelElement => ({ expressID, type, children })
 
 describe('collectSpatialLevels', () => {
   it('returns every child of the building that contains storeys', () => {
@@ -39,5 +48,24 @@ describe('collectSpatialLevels', () => {
 
   it('returns an empty list without a structure', () => {
     expect(collectSpatialLevels(null)).toEqual([])
+  })
+})
+
+describe('collectSubsetIds', () => {
+  it('includes parts nested in an assembly', () => {
+    const storey = element(1, 'IFCBUILDINGSTOREY', [
+      element(10, 'IFCWALL'),
+      element(11, 'IFCELEMENTASSEMBLY', [element(12, 'IFCCOLUMN'), element(13, 'IFCSTAIRFLIGHT')]),
+    ])
+
+    expect(collectSubsetIds(storey)).toEqual([10, 11, 12, 13])
+  })
+
+  it('skips spaces but keeps the elements inside them', () => {
+    const storey = element(1, 'IFCBUILDINGSTOREY', [
+      element(20, 'IFCSPACE', [element(21, 'IFCFURNISHINGELEMENT')]),
+    ])
+
+    expect(collectSubsetIds(storey)).toEqual([21])
   })
 })

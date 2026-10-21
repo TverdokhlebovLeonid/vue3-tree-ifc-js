@@ -1,12 +1,7 @@
 import { IfcViewerAPI } from 'web-ifc-viewer'
-import { Object3D } from 'three'
 
 export interface IIfcViewerAPI extends IfcViewerAPI {
   container?: HTMLDivElement
-}
-
-export interface ISubsets {
-  [key: string]: Object3D
 }
 
 export interface IDataLevelHide {
