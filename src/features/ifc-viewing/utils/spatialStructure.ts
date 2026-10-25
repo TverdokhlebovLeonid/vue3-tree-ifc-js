@@ -28,8 +28,20 @@ const visitSubsetIds = (nodes: IModelElement[], ids: number[]): void => {
   }
 }
 
-export const collectSubsetIds = (element: IModelElement): number[] => {
+type SpatialNode = {
+  expressID: number
+  type?: string
+  children?: IModelElement[]
+}
+
+export const collectSubsetIds = (element: SpatialNode): number[] => {
   const ids: number[] = []
   visitSubsetIds(element.children ?? [], ids)
   return ids
+}
+
+export const collectHighlightIds = (element: SpatialNode): number[] => {
+  const ids = collectSubsetIds(element)
+  if (ids.length || SKIPPED_IFC_TYPES.has(element.type ?? '')) return ids
+  return [element.expressID]
 }

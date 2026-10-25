@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { IModelElement } from '@/features/ifc-viewing/types/ifc'
 import {
+  collectHighlightIds,
   collectSpatialLevels,
   collectSubsetIds,
 } from '@/features/ifc-viewing/utils/spatialStructure'
@@ -67,5 +68,29 @@ describe('collectSubsetIds', () => {
     ])
 
     expect(collectSubsetIds(storey)).toEqual([21])
+  })
+})
+
+describe('collectHighlightIds', () => {
+  it('matches the storey subset and leaves spaces out', () => {
+    const storey = element(1, 'IFCBUILDINGSTOREY', [
+      element(10, 'IFCWALL'),
+      element(11, 'IFCSPACE'),
+      element(12, 'IFCELEMENTASSEMBLY', [element(13, 'IFCSTAIRFLIGHT')]),
+    ])
+
+    expect(collectHighlightIds(storey)).toEqual(collectSubsetIds(storey))
+    expect(collectHighlightIds(storey)).toEqual([10, 12, 13])
+  })
+
+  it('highlights a leaf element by its own id', () => {
+    expect(collectHighlightIds(element(10, 'IFCWALL'))).toEqual([10])
+  })
+
+  it('does not highlight a space, but keeps the elements inside it', () => {
+    expect(collectHighlightIds(element(11, 'IFCSPACE'))).toEqual([])
+    expect(
+      collectHighlightIds(element(11, 'IFCSPACE', [element(12, 'IFCFURNISHINGELEMENT')])),
+    ).toEqual([12])
   })
 })

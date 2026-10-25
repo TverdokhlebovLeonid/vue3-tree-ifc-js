@@ -5,10 +5,16 @@ export const mockModelLevels = [
       { expressID: 8800, type: 'IFCROOF', children: [] },
       { expressID: 8862, type: 'IFCROOF', children: [] },
       { expressID: 8928, type: 'IFCROOF', children: [] },
+      { expressID: 9000, type: 'IFCSPACE', children: [] },
+      {
+        expressID: 9100,
+        type: 'IFCELEMENTASSEMBLY',
+        children: [{ expressID: 9101, type: 'IFCSTAIRFLIGHT', children: [] }],
+      },
     ],
     customID: '0-level',
     expressID: 63,
-    ids: [8800, 8862, 8928],
+    ids: [8800, 8862, 8928, 9100, 9101],
     type: 'IFCBUILDINGSTOREY',
   },
 ]

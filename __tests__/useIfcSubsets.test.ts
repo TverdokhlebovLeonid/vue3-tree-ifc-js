@@ -43,12 +43,13 @@ const createHarness = (modelID: number | null = 7) => {
   const removeSubset = vi.fn()
   const getSpatialStructure = vi.fn(async (): Promise<IModelElement | undefined> => spatialRoot())
   const pickIfcItemsByID = vi.fn()
+  const unpickIfcItems = vi.fn()
   const scene = shallowRef({ name: 'scene' } as unknown as Scene)
   const ifcViewing = shallowRef({
     IFC: {
       getSpatialStructure,
       loader: { ifcManager: { createSubset, removeSubset } },
-      selector: { pickIfcItemsByID },
+      selector: { pickIfcItemsByID, unpickIfcItems },
     },
   } as unknown as IIfcViewerAPI)
   const onLevels = vi.fn()
@@ -58,7 +59,16 @@ const createHarness = (modelID: number | null = 7) => {
     getModelID: () => resolvedModelID,
     onLevels,
   })
-  return { createSubset, removeSubset, getSpatialStructure, pickIfcItemsByID, scene, onLevels, subsets }
+  return {
+    createSubset,
+    removeSubset,
+    getSpatialStructure,
+    pickIfcItemsByID,
+    unpickIfcItems,
+    scene,
+    onLevels,
+    subsets,
+  }
 }
 
 describe('useIfcSubsets', () => {
@@ -150,5 +160,13 @@ describe('useIfcSubsets', () => {
     const harness = createHarness()
     harness.subsets.highlightModelLevel([100, 101])
     expect(harness.pickIfcItemsByID).toHaveBeenCalledWith(7, [100, 101])
+    expect(harness.unpickIfcItems).not.toHaveBeenCalled()
+  })
+
+  it('drops the highlight instead of picking an empty selection', () => {
+    const harness = createHarness()
+    harness.subsets.highlightModelLevel([])
+    expect(harness.unpickIfcItems).toHaveBeenCalledTimes(1)
+    expect(harness.pickIfcItemsByID).not.toHaveBeenCalled()
   })
 })

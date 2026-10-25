@@ -86,10 +86,15 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
     removeSubset(data.customID)
   }
 
-  const highlightModelLevel = (level: number[]): void => {
+  const highlightModelLevel = (ids: number[]): void => {
+    const selector = options.ifcViewing.value?.IFC.selector
+    if (!ids.length) {
+      selector?.unpickIfcItems()
+      return
+    }
     const modelID = options.getModelID()
     if (modelID == null) return
-    options.ifcViewing.value?.IFC.selector.pickIfcItemsByID(modelID, level)
+    selector?.pickIfcItemsByID(modelID, ids)
   }
 
   return {
