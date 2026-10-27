@@ -8,12 +8,13 @@ const createHarness = () => {
     point: { x: 1, y: 2, z: 3 },
   }))
   const prePickIfcItem = vi.fn()
+  const unPrepickIfcItems = vi.fn()
   const createPlane = vi.fn()
   const deletePlane = vi.fn()
   const deleteAllPlanes = vi.fn()
   const ifcViewing = shallowRef({
     context: { castRayIfc },
-    IFC: { selector: { prePickIfcItem } },
+    IFC: { selector: { prePickIfcItem, unPrepickIfcItems } },
     clipper: { createPlane, deletePlane, deleteAllPlanes },
   } as unknown as IIfcViewerAPI)
   const activeTool = ref('')
@@ -28,6 +29,7 @@ const createHarness = () => {
   return {
     castRayIfc,
     prePickIfcItem,
+    unPrepickIfcItems,
     createPlane,
     deletePlane,
     deleteAllPlanes,
@@ -68,6 +70,7 @@ describe('useIfcTools', () => {
 
     expect(harness.activeTool.value).toBe('')
     expect(harness.createPlane).toHaveBeenCalledTimes(1)
+    expect(harness.unPrepickIfcItems).toHaveBeenCalledTimes(1)
   })
 
   it('deletes every plane when the plane tool is cancelled', () => {
@@ -76,6 +79,7 @@ describe('useIfcTools', () => {
     harness.tools.toolSelection(IFC_VIEWING_TOOLS.cancelPlane)
 
     expect(harness.deleteAllPlanes).toHaveBeenCalledTimes(1)
+    expect(harness.unPrepickIfcItems).toHaveBeenCalledTimes(1)
     expect(harness.activeTool.value).toBe('')
     expect(harness.onDeactivateNavCube).toHaveBeenCalled()
   })
@@ -95,6 +99,10 @@ describe('useIfcTools', () => {
     harness.tools.setMovingMouse()
     expect(harness.castRayIfc).toHaveBeenCalledTimes(1)
     expect(harness.prePickIfcItem).toHaveBeenCalledTimes(1)
+    expect(harness.unPrepickIfcItems).not.toHaveBeenCalled()
+
+    harness.tools.toolSelection(IFC_VIEWING_TOOLS.createCoordinates)
+    expect(harness.unPrepickIfcItems).toHaveBeenCalledTimes(1)
   })
 
   it('resets coordinates when the coordinate tool is selected again', () => {
@@ -105,6 +113,15 @@ describe('useIfcTools', () => {
     harness.tools.toolSelection(IFC_VIEWING_TOOLS.createCoordinates)
 
     expect(harness.tools.modelCoordinates.value).toEqual({ x: 0, y: 0, z: 0 })
+  })
+
+  it('rounds coordinates to two decimals', () => {
+    const harness = createHarness()
+    harness.castRayIfc.mockReturnValueOnce({ point: { x: 1.234, y: 2.236, z: -3.001 } })
+    harness.tools.toolSelection(IFC_VIEWING_TOOLS.createCoordinates)
+    harness.tools.setMovingMouse()
+
+    expect(harness.tools.modelCoordinates.value).toEqual({ x: 1.23, y: 2.24, z: -3 })
   })
 
   it('writes null coordinates when the ray misses', () => {

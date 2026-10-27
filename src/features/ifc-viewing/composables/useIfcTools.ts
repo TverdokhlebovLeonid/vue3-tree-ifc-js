@@ -10,7 +10,14 @@ type UseIfcToolsOptions = {
   onDeactivateNavCube: () => void
 }
 
+const COORDINATE_DECIMALS = 2
+
 const defaultCoordinates = (): IModelCoordinates => ({ x: 0, y: 0, z: 0 })
+
+const roundCoordinate = (value: number): number => {
+  const factor = 10 ** COORDINATE_DECIMALS
+  return Math.round(value * factor) / factor
+}
 
 export const useIfcTools = (options: UseIfcToolsOptions) => {
   const modelCoordinates = ref<IModelCoordinates>(defaultCoordinates())
@@ -20,10 +27,14 @@ export const useIfcTools = (options: UseIfcToolsOptions) => {
   }
 
   const createCoordinatesMovingMouse = (): void => {
-    const coordinate = options.ifcViewing.value?.context?.castRayIfc()?.point || null
-    modelCoordinates.value.x = coordinate?.x ?? null
-    modelCoordinates.value.y = coordinate?.y ?? null
-    modelCoordinates.value.z = coordinate?.z ?? null
+    const point = options.ifcViewing.value?.context?.castRayIfc()?.point
+    modelCoordinates.value = point
+      ? {
+          x: roundCoordinate(point.x),
+          y: roundCoordinate(point.y),
+          z: roundCoordinate(point.z),
+        }
+      : { x: null, y: null, z: null }
   }
 
   const selectElementMovingMouse = (): void => {
@@ -61,6 +72,9 @@ export const useIfcTools = (options: UseIfcToolsOptions) => {
 
   const toolSelection = (tool = ''): void => {
     if (options.activeTool.value === tool) return
+    if (options.activeTool.value === IFC_VIEWING_TOOLS.createPlane) {
+      options.ifcViewing.value?.IFC.selector.unPrepickIfcItems()
+    }
     options.onDeactivateNavCube()
     options.activeTool.value = tool
     if (tool === IFC_VIEWING_TOOLS.navCube) {
