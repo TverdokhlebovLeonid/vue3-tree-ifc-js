@@ -1,4 +1,5 @@
 import { effectScope } from 'vue'
+import { flushPromises } from '@vue/test-utils'
 import { useFullscreen } from '@/features/ifc-viewing/composables/useFullscreen'
 
 const fullscreenState = { element: null as Element | null }
@@ -40,45 +41,67 @@ describe('useFullscreen', () => {
     removeEventListener.mockRestore()
   })
 
-  const start = (onExit = vi.fn()) => {
+  const start = () => {
     const scope = effectScope()
-    const api = scope.run(() => useFullscreen({ onExit }))
+    const api = scope.run(() => useFullscreen())
     if (!api) throw new Error('fullscreen composable did not start')
-    return { scope, api, onExit }
+    return { scope, api }
   }
 
   it('enters fullscreen and leaves it on the second toggle', async () => {
-    const { api, onExit } = start()
+    const { api } = start()
     api.toggle()
+    await flushPromises()
     expect(document.documentElement.requestFullscreen).toHaveBeenCalled()
     expect(api.isFullscreen.value).toBe(true)
-    expect(onExit).not.toHaveBeenCalled()
 
     api.toggle()
+    await flushPromises()
     expect(document.exitFullscreen).toHaveBeenCalled()
     expect(api.isFullscreen.value).toBe(false)
-    expect(onExit).toHaveBeenCalledTimes(1)
   })
 
-  it('does not report an exit when fullscreen was already closed', () => {
-    const { api, onExit } = start()
+  it('stays closed when fullscreen was already closed', async () => {
+    const { api } = start()
     api.close()
+    await flushPromises()
     expect(api.isFullscreen.value).toBe(false)
-    expect(onExit).not.toHaveBeenCalled()
   })
 
-  it('syncs an external exit from fullscreenchange', () => {
-    const { api, onExit } = start()
+  it('stays closed when the browser refuses fullscreen', async () => {
+    vi.mocked(document.documentElement.requestFullscreen).mockRejectedValueOnce(new Error('denied'))
+    const { api } = start()
     api.toggle()
+    await flushPromises()
+
+    expect(api.isFullscreen.value).toBe(false)
+  })
+
+  it('stays open when the browser refuses to exit fullscreen', async () => {
+    const { api } = start()
+    api.toggle()
+    await flushPromises()
+    vi.mocked(document.exitFullscreen).mockRejectedValueOnce(new Error('denied'))
+    api.toggle()
+    await flushPromises()
+
+    expect(api.isFullscreen.value).toBe(true)
+  })
+
+  it('syncs an external exit from fullscreenchange', async () => {
+    const { api } = start()
+    api.toggle()
+    await flushPromises()
     fullscreenState.element = null
     document.dispatchEvent(new Event('fullscreenchange'))
 
     expect(api.isFullscreen.value).toBe(false)
-    expect(onExit).toHaveBeenCalledTimes(1)
   })
 
-  it('listens to standard and webkit fullscreen events until the scope stops', () => {
-    const { scope, onExit } = start()
+  it('listens to standard and webkit fullscreen events until the scope stops', async () => {
+    const { scope, api } = start()
+    api.toggle()
+    await flushPromises()
     expect(addEventListener).toHaveBeenCalledWith('fullscreenchange', expect.any(Function))
     expect(addEventListener).toHaveBeenCalledWith('webkitfullscreenchange', expect.any(Function))
 
@@ -91,6 +114,6 @@ describe('useFullscreen', () => {
 
     fullscreenState.element = null
     document.dispatchEvent(new Event('webkitfullscreenchange'))
-    expect(onExit).not.toHaveBeenCalled()
+    expect(api.isFullscreen.value).toBe(true)
   })
 })

@@ -21,8 +21,8 @@ interface MockViewer {
         reset: ReturnType<typeof vi.fn>
       }
     }
-    getScene: ReturnType<typeof vi.fn>
-    resize: ReturnType<typeof vi.fn>
+        getScene: ReturnType<typeof vi.fn>
+        updateAspect: ReturnType<typeof vi.fn>
   }
   IFC: {
     setWasmPath: ReturnType<typeof vi.fn>
@@ -52,7 +52,7 @@ const viewerMock = vi.hoisted(() => {
           },
         },
         getScene: vi.fn(() => ({ name: 'scene' })),
-        resize: vi.fn(),
+        updateAspect: vi.fn(),
       },
       IFC: {
         setWasmPath: vi.fn(async () => undefined),
@@ -199,7 +199,7 @@ describe('useIfcViewer', () => {
     api.dispose()
 
     expect(viewer.context.ifcCamera.cameraControls.reset).toHaveBeenCalled()
-    expect(viewer.context.resize).toHaveBeenCalled()
+    expect(viewer.context.updateAspect).toHaveBeenCalled()
     expect(viewer.dispose).toHaveBeenCalled()
   })
 })

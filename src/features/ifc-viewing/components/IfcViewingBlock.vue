@@ -68,10 +68,11 @@ const onSetModel = (model: IModelLevels[]): void => {
 </template>
 <style scoped lang="sass">
 .ifc-viewing-block
+  flex: 1
+  min-height: 0
+  display: flex
+  flex-direction: column
   &__fullscreen
-    display: flex
-    flex-direction: column
-    justify-content: space-between
     position: fixed
     top: 0
     left: 0
@@ -80,6 +81,7 @@ const onSetModel = (model: IModelLevels[]): void => {
     background-color: $color-bg-light
     z-index: 10
   &__control-panel
+    flex-shrink: 0
     &_fullscreen
       position: absolute
       bottom: 5%

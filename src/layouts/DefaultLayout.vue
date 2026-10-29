@@ -23,7 +23,17 @@ const title = computed((): string => (route?.meta?.title as string) || '')
 .default-layout
   background-color: $color-bg-light
   height: 100vh
+  display: flex
+  flex-direction: column
+  overflow: hidden
   border-radius: 5px
+  .el-container
+    flex: 1
+    min-height: 0
+  .el-main
+    display: flex
+    flex-direction: column
+    min-height: 0
   .el-header
     margin-bottom: 20px
     display: flex

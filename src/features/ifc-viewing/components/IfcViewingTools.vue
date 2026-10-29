@@ -96,7 +96,7 @@ onUnmounted(() => {
 
 <style scoped lang="sass">
 .ifc-tools
-  margin-top: 80px
+  margin-top: 10px
   display: flex
   flex-direction: row
   justify-content: space-between

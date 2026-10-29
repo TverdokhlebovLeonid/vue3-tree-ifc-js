@@ -1,8 +1,7 @@
-import { onMounted, ref, shallowRef } from 'vue'
+import { onMounted, onScopeDispose, ref, shallowRef } from 'vue'
 import { ElLoading, ElMessage } from 'element-plus'
 import { Color, type Scene } from 'three'
 import { IfcViewerAPI } from 'web-ifc-viewer'
-import type { IfcContext } from 'web-ifc-viewer/dist/components'
 import type { IFCModel } from 'web-ifc-three/IFC/components/IFCModel'
 import type { IIfcViewerAPI } from '@/features/ifc-viewing/types/ifc'
 import { isIfcFile } from '@/features/ifc-viewing/utils/isIfcFile'
@@ -88,16 +87,28 @@ export const useIfcViewer = (options: UseIfcViewerOptions = {}) => {
     ifcViewing.value?.context.ifcCamera.cameraControls.reset()
   }
 
+  let resizeObserver: ResizeObserver | undefined
+
   const resizeViewer = (): void => {
-    if (ifcViewing.value?.context as IfcContext) ifcViewing.value?.context['resize']()
+    ifcViewing.value?.context.updateAspect()
+  }
+
+  const observeContainer = (): void => {
+    if (!container.value || typeof ResizeObserver === 'undefined') return
+    resizeObserver = new ResizeObserver(() => resizeViewer())
+    resizeObserver.observe(container.value)
   }
 
   const dispose = (): void => {
+    resizeObserver?.disconnect()
     ifcViewing.value?.dispose()
   }
 
+  onScopeDispose(() => resizeObserver?.disconnect())
+
   onMounted(() => {
     init()
+    observeContainer()
     void load(DEMO_IFC_URL)
   })
 

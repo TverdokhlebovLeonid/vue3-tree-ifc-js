@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, watch } from 'vue'
+import { nextTick, onUnmounted, watch } from 'vue'
 import type { IDataLevelHide, IModelLevels } from '@/features/ifc-viewing/types/ifc'
 import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
 import { TEXT_HELP_PLANE } from '@/features/ifc-viewing/components/dataIfcViewing'
@@ -18,12 +18,6 @@ const activeTool = defineModel<string>('activeTool', { default: '' })
 const emits = defineEmits<{
   (e: 'set-model', value: IModelLevels[]): void
 }>()
-const classIfcViewing = computed((): string =>
-  props.isFullscreen ? 'height-full' : 'height-default',
-)
-const classIfcViewingContainer = computed((): string =>
-  props.isFullscreen ? 'fullscreen-viewer' : 'height-default',
-)
 
 let resetSubsets = (): void => undefined
 let setSpatialStructure = async (): Promise<void> => undefined
@@ -97,8 +91,7 @@ watch(
 )
 watch(
   () => props.isFullscreen,
-  (isFullscreen) => {
-    if (isFullscreen) return
+  () => {
     nextTick(() => resizeViewer())
   },
 )
@@ -110,7 +103,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="ifc-viewing" :class="classIfcViewing">
+  <div class="ifc-viewing">
     <div class="ifc-viewing__buttons">
       <div class="ifc-viewing__buttons_upload">
         <el-tooltip effect="dark" content="Загрузить свой файл формата IFC">
@@ -142,7 +135,6 @@ onUnmounted(() => {
       class="ifc-viewing__container"
       ref="container"
       tabindex="0"
-      :class="classIfcViewingContainer"
       @mousemove="setMovingMouse"
       @contextmenu.prevent="setRightChoice"
       @dblclick="setDoubleChoice"
@@ -154,7 +146,13 @@ onUnmounted(() => {
 
 <style scoped lang="sass">
 .ifc-viewing
+  flex: 1
+  min-height: 220px
+  display: flex
+  flex-direction: column
+  position: relative
   &__buttons
+    flex-shrink: 0
     display: flex
     flex-direction: row
     align-items: center
@@ -170,10 +168,15 @@ onUnmounted(() => {
     display: flex
     flex-direction: column
     position: absolute
+    z-index: 1
     padding: 10px
     span
       color: $color-text-dark
   &__container
+    flex: 1
+    min-height: 0
+    overflow: hidden
+    position: relative
     &:focus-visible
       outline: none !important
     &_cube
@@ -182,14 +185,4 @@ onUnmounted(() => {
       position: absolute
       right: 20px
       z-index: 1
-
-.fullscreen-viewer
-  display: flex
-  align-items: center
-  justify-content: center
-  height: 100vh
-.height-full
-  height: 100%
-.height-default
-  height: 250px
 </style>

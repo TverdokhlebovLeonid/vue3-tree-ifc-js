@@ -24,27 +24,26 @@ const exitFullscreen = (): Promise<void> => {
   return (document as IWebkitDocument).webkitExitFullscreen?.() ?? Promise.resolve()
 }
 
-export const useFullscreen = (options: { onExit?: () => void } = {}) => {
+const ignoreFullscreenError = (): void => undefined
+
+export const useFullscreen = () => {
   const isFullscreen = ref(false)
 
   const leaveFullscreen = (): void => {
-    const wasFullscreen = isFullscreen.value
-    void exitFullscreen()
-    isFullscreen.value = false
-    if (wasFullscreen) options.onExit?.()
+    void exitFullscreen().then(() => {
+      isFullscreen.value = false
+    }, ignoreFullscreenError)
   }
 
   const syncFullscreen = (): void => {
-    const active = !!getFullscreenElement()
-    const wasFullscreen = isFullscreen.value
-    isFullscreen.value = active
-    if (wasFullscreen && !active) options.onExit?.()
+    isFullscreen.value = !!getFullscreenElement()
   }
 
   const toggle = (): void => {
     if (!getFullscreenElement()) {
-      void requestFullscreen()
-      isFullscreen.value = true
+      void requestFullscreen().then(() => {
+        isFullscreen.value = true
+      }, ignoreFullscreenError)
       return
     }
     leaveFullscreen()
