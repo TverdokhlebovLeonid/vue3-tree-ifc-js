@@ -66,6 +66,7 @@ const createHarness = (modelID: number | null = 7) => {
     pickIfcItemsByID,
     unpickIfcItems,
     scene,
+    ifcViewing,
     onLevels,
     subsets,
   }
@@ -154,6 +155,26 @@ describe('useIfcSubsets', () => {
 
     expect(harness.createSubset).toHaveBeenCalledTimes(2)
     expect(harness.removeSubset).not.toHaveBeenCalled()
+    expect(harness.onLevels).toHaveBeenLastCalledWith([])
+  })
+
+  it('drops a spatial structure read after the viewer was replaced', async () => {
+    const harness = createHarness()
+    let finish: (value: IModelElement) => void = () => undefined
+    harness.getSpatialStructure.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+    )
+    const pending = harness.subsets.setSpatialStructure()
+    harness.ifcViewing.value = {
+      IFC: { getSpatialStructure: vi.fn() },
+    } as unknown as IIfcViewerAPI
+    finish(spatialRoot())
+    await pending
+
+    expect(harness.onLevels).not.toHaveBeenCalled()
+    expect(harness.createSubset).not.toHaveBeenCalled()
   })
 
   it('highlights express ids of the active level', async () => {

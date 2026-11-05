@@ -12,8 +12,10 @@ const OPTIONS_LOADING = {
   lock: true,
   text: 'Loading',
 }
+const MESSAGE_LOAD_FAILED = 'Не удалось открыть модель IFC.'
 
 type UseIfcViewerOptions = {
+  onLoadStart?: () => void
   onModelReady?: () => void
   onSpatialStructure?: () => Promise<void> | void
   onFileSelected?: () => void
@@ -44,43 +46,91 @@ export const useIfcViewer = (options: UseIfcViewerOptions = {}) => {
     ifcViewing.value.context.ifcCamera.cameraControls.zoomTo(4)
   }
 
-  const closeLoading = (): void => {
-    if (loadingIfc.value) loadingIfc.value.close()
+  let loadId = 0
+
+  const beginLoad = (): number => {
+    loadId += 1
+    return loadId
   }
 
-  const load = async (url: string): Promise<void> => {
-    await ifcViewing.value?.IFC.setWasmPath(WASM_PATH)
-    model.value = await ifcViewing.value?.IFC.loadIfcUrl(url, true)
-    const modelID = getModelID()
-    if (modelID == null) {
+  const isCurrentLoad = (id: number): boolean => id === loadId
+
+  const closeLoading = (): void => {
+    loadingIfc.value?.close()
+    loadingIfc.value = undefined
+  }
+
+  const showLoadError = (): void => {
+    ElMessage({
+      showClose: true,
+      message: MESSAGE_LOAD_FAILED,
+      type: 'error',
+    })
+  }
+
+  const load = async (url: string, id: number): Promise<void> => {
+    const viewer = ifcViewing.value
+    try {
+      if (!isCurrentLoad(id) || !viewer) return
+      model.value = undefined
+      scene.value = undefined
+      options.onLoadStart?.()
+      await viewer.IFC.setWasmPath(WASM_PATH)
+      if (!isCurrentLoad(id)) return
+      const loaded: IFCModel | null | undefined = await viewer.IFC.loadIfcUrl(url, true)
+      if (!isCurrentLoad(id)) return
+      const modelID = loaded?.modelID
+      if (loaded == null || modelID == null) {
+        options.onLoadStart?.()
+        showLoadError()
+        return
+      }
+      model.value = loaded
+      await viewer.shadowDropper.renderShadow(modelID)
+      if (!isCurrentLoad(id)) return
+      viewer.context.ifcCamera.cameraControls.saveState()
+      scene.value = viewer.context.getScene()
+      loaded.removeFromParent()
+      options.onModelReady?.()
+      await options.onSpatialStructure?.()
+    } catch {
+      if (!isCurrentLoad(id)) return
+      model.value?.removeFromParent()
+      model.value = undefined
+      scene.value = undefined
+      options.onLoadStart?.()
+      showLoadError()
+    } finally {
+      if (isCurrentLoad(id)) closeLoading()
+    }
+  }
+
+  const handleFileUpload = async (): Promise<void> => {
+    const fileIfc = file.value?.files?.[0]
+    if (!file.value) return
+    if (!fileIfc || !isIfcFile(fileIfc.name)) {
+      ElMessage({
+        showClose: true,
+        message: 'Вы загрузили не ifc формат.',
+        type: 'error',
+      })
+      return
+    }
+    const id = beginLoad()
+    closeLoading()
+    loadingIfc.value = ElLoading.service(OPTIONS_LOADING)
+    try {
+      await ifcViewing.value?.dispose()
+      if (!isCurrentLoad(id)) return
+      init()
+    } catch {
+      if (!isCurrentLoad(id)) return
+      showLoadError()
       closeLoading()
       return
     }
-    await ifcViewing.value?.shadowDropper.renderShadow(modelID)
-    ifcViewing.value?.context.ifcCamera.cameraControls.saveState()
-    scene.value = ifcViewing.value?.context.getScene()
-    model.value?.removeFromParent()
-    options.onModelReady?.()
-    closeLoading()
-    await options.onSpatialStructure?.()
-  }
-
-  const handleFileUpload = (): void => {
-    const fileIfc = file.value?.files?.[0]
-    if (!file.value) return
-    if (fileIfc && isIfcFile(fileIfc.name)) {
-      loadingIfc.value = ElLoading.service(OPTIONS_LOADING)
-      ifcViewing.value?.dispose()
-      init()
-      void load(URL.createObjectURL(fileIfc))
-      options.onFileSelected?.()
-      return
-    }
-    ElMessage({
-      showClose: true,
-      message: 'Вы загрузили не ifc формат.',
-      type: 'error',
-    })
+    void load(URL.createObjectURL(fileIfc), id)
+    options.onFileSelected?.()
   }
 
   const resetView = (): void => {
@@ -109,7 +159,7 @@ export const useIfcViewer = (options: UseIfcViewerOptions = {}) => {
   onMounted(() => {
     init()
     observeContainer()
-    void load(DEMO_IFC_URL)
+    void load(DEMO_IFC_URL, beginLoad())
   })
 
   return {

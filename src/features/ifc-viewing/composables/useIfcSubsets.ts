@@ -24,6 +24,7 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
 
   const resetSubsets = (): void => {
     modelLevels.value = []
+    options.onLevels([])
   }
 
   const newSubsetOfType = (ids: number[], customID: string): void => {
@@ -65,9 +66,14 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
   }
 
   const setSpatialStructure = async (): Promise<void> => {
+    const viewer = options.ifcViewing.value
     const modelID = options.getModelID()
-    const structure =
-      modelID == null ? null : await options.ifcViewing.value?.IFC.getSpatialStructure(modelID)
+    if (modelID == null || !viewer) {
+      setModelLevels(collectSpatialLevels(null))
+      return
+    }
+    const structure = await viewer.IFC.getSpatialStructure(modelID)
+    if (options.ifcViewing.value !== viewer || options.getModelID() !== modelID) return
     setModelLevels(collectSpatialLevels(structure))
   }
 

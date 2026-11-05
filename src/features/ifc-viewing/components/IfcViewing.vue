@@ -35,6 +35,7 @@ const {
   resizeViewer,
   dispose,
 } = useIfcViewer({
+  onLoadStart: () => resetSubsets(),
   onModelReady: () => resetSubsets(),
   onSpatialStructure: () => setSpatialStructure(),
   onFileSelected: () => resetActiveTool(),
