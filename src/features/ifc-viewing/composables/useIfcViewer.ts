@@ -68,6 +68,14 @@ export const useIfcViewer = (options: UseIfcViewerOptions = {}) => {
     })
   }
 
+  const releaseObjectUrl = (url: string): void => {
+    if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+  }
+
+  const resetFileInput = (): void => {
+    if (file.value) file.value.value = ''
+  }
+
   const load = async (url: string, id: number): Promise<void> => {
     const viewer = ifcViewing.value
     try {
@@ -101,35 +109,44 @@ export const useIfcViewer = (options: UseIfcViewerOptions = {}) => {
       options.onLoadStart?.()
       showLoadError()
     } finally {
+      releaseObjectUrl(url)
       if (isCurrentLoad(id)) closeLoading()
     }
   }
 
   const handleFileUpload = async (): Promise<void> => {
-    const fileIfc = file.value?.files?.[0]
-    if (!file.value) return
+    const input = file.value
+    const fileIfc = input?.files?.[0]
+    if (!input) return
     if (!fileIfc || !isIfcFile(fileIfc.name)) {
       ElMessage({
         showClose: true,
         message: 'Вы загрузили не ifc формат.',
         type: 'error',
       })
+      resetFileInput()
       return
     }
     const id = beginLoad()
     closeLoading()
     loadingIfc.value = ElLoading.service(OPTIONS_LOADING)
+    const objectUrl = URL.createObjectURL(fileIfc)
+    resetFileInput()
     try {
       await ifcViewing.value?.dispose()
-      if (!isCurrentLoad(id)) return
+      if (!isCurrentLoad(id)) {
+        releaseObjectUrl(objectUrl)
+        return
+      }
       init()
     } catch {
+      releaseObjectUrl(objectUrl)
       if (!isCurrentLoad(id)) return
       showLoadError()
       closeLoading()
       return
     }
-    void load(URL.createObjectURL(fileIfc), id)
+    void load(objectUrl, id)
     options.onFileSelected?.()
   }
 

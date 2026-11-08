@@ -135,6 +135,11 @@ describe('useIfcViewer', () => {
       writable: true,
       value: vi.fn(() => 'blob:ifc'),
     })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(),
+    })
   })
 
   it('loads the demo model after mount', async () => {
@@ -162,6 +167,7 @@ describe('useIfcViewer', () => {
     expect(onSpatialStructure).toHaveBeenCalled()
     expect(api.getModelID()).toBe(1)
     expect(api.scene.value).toEqual({ name: 'scene' })
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled()
   })
 
   it('stops loading when the model has no id', async () => {
@@ -186,9 +192,11 @@ describe('useIfcViewer', () => {
     const onFileSelected = vi.fn()
     const { api } = mountViewer({ onFileSelected })
     await flushPromises()
-    api.file.value = fileInput('notes.txt')
+    const input = fileInput('notes.txt')
+    api.file.value = input
     api.handleFileUpload()
 
+    expect(input.value).toBe('')
     expect(viewerMock.message).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'Вы загрузили не ifc формат.',
@@ -204,10 +212,14 @@ describe('useIfcViewer', () => {
     const onFileSelected = vi.fn()
     const { api } = mountViewer({ onFileSelected })
     await flushPromises()
-    api.file.value = fileInput('house.ifc')
+    const input = fileInput('house.ifc')
+    api.file.value = input
     api.handleFileUpload()
     await flushPromises()
 
+    expect(input.value).toBe('')
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1)
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:ifc')
     expect(viewerMock.service).toHaveBeenCalledWith({ lock: true, text: 'Loading' })
     expect(viewerMock.viewers[0].dispose).toHaveBeenCalled()
     expect(viewerMock.viewers[0].dispose.mock.invocationCallOrder[0]).toBeLessThan(
@@ -238,6 +250,7 @@ describe('useIfcViewer', () => {
       }),
     )
     expect(viewerMock.close).toHaveBeenCalledTimes(1)
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:ifc')
   })
 
   it('closes loading when reading the model throws', async () => {
@@ -256,6 +269,26 @@ describe('useIfcViewer', () => {
     expect(onSpatialStructure).toHaveBeenCalledTimes(1)
     expect(api.getModelID()).toBeUndefined()
     expect(viewerMock.state.model?.removeFromParent).toHaveBeenCalled()
+    expect(viewerMock.message).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Не удалось открыть модель IFC.', type: 'error' }),
+    )
+    expect(viewerMock.close).toHaveBeenCalledTimes(1)
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:ifc')
+  })
+
+  it('revokes the object url when the previous viewer cannot be disposed', async () => {
+    const { api } = mountViewer()
+    await flushPromises()
+    viewerMock.viewers[0].dispose.mockRejectedValueOnce(new Error('dispose'))
+    const input = fileInput('house.ifc')
+    api.file.value = input
+    await api.handleFileUpload()
+
+    expect(viewerMock.viewers).toHaveLength(1)
+    expect(viewerMock.viewers[0].IFC.loadIfcUrl).toHaveBeenCalledTimes(1)
+    expect(input.value).toBe('')
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1)
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:ifc')
     expect(viewerMock.message).toHaveBeenCalledWith(
       expect.objectContaining({ message: 'Не удалось открыть модель IFC.', type: 'error' }),
     )
@@ -305,6 +338,7 @@ describe('useIfcViewer', () => {
     expect(api.getModelID()).toBeUndefined()
     expect(viewerMock.viewers[0].shadowDropper.renderShadow).not.toHaveBeenCalled()
     expect(viewerMock.close).not.toHaveBeenCalled()
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled()
 
     uploaded.resolve({ modelID: 22, removeFromParent: vi.fn() })
     await pending
@@ -314,6 +348,8 @@ describe('useIfcViewer', () => {
     expect(onSpatialStructure).toHaveBeenCalledTimes(1)
     expect(viewerMock.viewers[1].shadowDropper.renderShadow).toHaveBeenCalledWith(22)
     expect(viewerMock.close).toHaveBeenCalledTimes(1)
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1)
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:ifc')
     expect(onLoadStart).toHaveBeenCalledTimes(2)
   })
 

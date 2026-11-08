@@ -110,7 +110,14 @@ onUnmounted(() => {
         <el-tooltip effect="dark" content="Загрузить свой файл формата IFC">
           <el-button type="primary" link>
             <label for="inputFile">
-              <input id="inputFile" ref="file" type="file" hidden @change="handleFileUpload" />
+              <input
+                id="inputFile"
+                ref="file"
+                type="file"
+                accept=".ifc"
+                hidden
+                @change="handleFileUpload"
+              />
               <span>Загрузить файл IFC</span>
               <el-icon class="el-icon--right"><Upload /></el-icon>
             </label>
