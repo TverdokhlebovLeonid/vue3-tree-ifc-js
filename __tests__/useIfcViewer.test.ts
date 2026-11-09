@@ -27,6 +27,7 @@ interface MockViewer {
   IFC: {
     setWasmPath: ReturnType<typeof vi.fn>
     loadIfcUrl: ReturnType<typeof vi.fn>
+    loader: { ifcManager: { setOnProgress: ReturnType<typeof vi.fn> } }
   }
   shadowDropper: { renderShadow: ReturnType<typeof vi.fn> }
   dispose: ReturnType<typeof vi.fn>
@@ -63,6 +64,7 @@ const viewerMock = vi.hoisted(() => {
       IFC: {
         setWasmPath: vi.fn(async () => undefined),
         loadIfcUrl: vi.fn(async () => (state.loadModel ? state.loadModel() : state.model)),
+        loader: { ifcManager: { setOnProgress: vi.fn() } },
       },
       shadowDropper: {
         renderShadow: vi.fn(async () => {
@@ -78,9 +80,10 @@ const viewerMock = vi.hoisted(() => {
     return createViewer()
   })
   const close = vi.fn()
-  const service = vi.fn(() => ({ close }))
+  const setText = vi.fn()
+  const service = vi.fn(() => ({ close, setText }))
   const message = vi.fn()
-  return { state, viewers, IfcViewerAPI, close, service, message }
+  return { state, viewers, IfcViewerAPI, close, setText, service, message }
 })
 
 vi.mock('web-ifc-viewer', () => ({
@@ -127,6 +130,7 @@ describe('useIfcViewer', () => {
     viewerMock.state.loadModel = undefined
     viewerMock.state.renderShadow = undefined
     viewerMock.close.mockClear()
+    viewerMock.setText.mockClear()
     viewerMock.service.mockClear()
     viewerMock.message.mockClear()
     viewerMock.IfcViewerAPI.mockClear()
@@ -159,7 +163,14 @@ describe('useIfcViewer', () => {
     expect(viewer.context.ifcCamera.cameraControls.setPosition).toHaveBeenCalledWith(0, 0, 95)
     expect(viewer.context.ifcCamera.cameraControls.zoomTo).toHaveBeenCalledWith(4)
     expect(viewer.IFC.setWasmPath).toHaveBeenCalledWith('../wasm/')
-    expect(viewer.IFC.loadIfcUrl).toHaveBeenCalledWith('../ifc/demo.ifc', true)
+    expect(viewer.IFC.loadIfcUrl).toHaveBeenCalledWith(
+      '../ifc/demo.ifc',
+      true,
+      expect.any(Function),
+    )
+    expect(viewer.IFC.loader.ifcManager.setOnProgress).toHaveBeenCalledWith(expect.any(Function))
+    expect(viewerMock.service).toHaveBeenCalledWith({ lock: true, text: 'Загрузка…' })
+    expect(viewerMock.close).toHaveBeenCalledTimes(1)
     expect(viewer.shadowDropper.renderShadow).toHaveBeenCalledWith(1)
     expect(viewer.context.getScene).toHaveBeenCalled()
     expect(viewerMock.state.model?.removeFromParent).toHaveBeenCalled()
@@ -180,6 +191,7 @@ describe('useIfcViewer', () => {
     expect(api.getModelID()).toBeUndefined()
     expect(onModelReady).not.toHaveBeenCalled()
     expect(onSpatialStructure).not.toHaveBeenCalled()
+    expect(viewerMock.close).toHaveBeenCalledTimes(1)
     expect(viewerMock.message).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'Не удалось открыть модель IFC.',
@@ -220,12 +232,16 @@ describe('useIfcViewer', () => {
     expect(input.value).toBe('')
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1)
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:ifc')
-    expect(viewerMock.service).toHaveBeenCalledWith({ lock: true, text: 'Loading' })
+    expect(viewerMock.service).toHaveBeenCalledWith({ lock: true, text: 'Загрузка…' })
     expect(viewerMock.viewers[0].dispose).toHaveBeenCalled()
     expect(viewerMock.viewers[0].dispose.mock.invocationCallOrder[0]).toBeLessThan(
       viewerMock.IfcViewerAPI.mock.invocationCallOrder[1],
     )
-    expect(viewerMock.viewers[1].IFC.loadIfcUrl).toHaveBeenCalledWith('blob:ifc', true)
+    expect(viewerMock.viewers[1].IFC.loadIfcUrl).toHaveBeenCalledWith(
+      'blob:ifc',
+      true,
+      expect.any(Function),
+    )
     expect(onFileSelected).toHaveBeenCalled()
     expect(viewerMock.close).toHaveBeenCalled()
   })
@@ -249,7 +265,7 @@ describe('useIfcViewer', () => {
         type: 'error',
       }),
     )
-    expect(viewerMock.close).toHaveBeenCalledTimes(1)
+    expect(viewerMock.close).toHaveBeenCalledTimes(2)
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:ifc')
   })
 
@@ -272,7 +288,7 @@ describe('useIfcViewer', () => {
     expect(viewerMock.message).toHaveBeenCalledWith(
       expect.objectContaining({ message: 'Не удалось открыть модель IFC.', type: 'error' }),
     )
-    expect(viewerMock.close).toHaveBeenCalledTimes(1)
+    expect(viewerMock.close).toHaveBeenCalledTimes(2)
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:ifc')
   })
 
@@ -292,7 +308,7 @@ describe('useIfcViewer', () => {
     expect(viewerMock.message).toHaveBeenCalledWith(
       expect.objectContaining({ message: 'Не удалось открыть модель IFC.', type: 'error' }),
     )
-    expect(viewerMock.close).toHaveBeenCalledTimes(1)
+    expect(viewerMock.close).toHaveBeenCalledTimes(2)
   })
 
   it('creates the next viewer only after dispose finishes', async () => {
@@ -314,7 +330,11 @@ describe('useIfcViewer', () => {
     await pending
     await flushPromises()
     expect(viewerMock.viewers).toHaveLength(2)
-    expect(viewerMock.viewers[1].IFC.loadIfcUrl).toHaveBeenCalledWith('blob:ifc', true)
+    expect(viewerMock.viewers[1].IFC.loadIfcUrl).toHaveBeenCalledWith(
+      'blob:ifc',
+      true,
+      expect.any(Function),
+    )
   })
 
   it('discards a load that finishes after a newer file', async () => {
@@ -337,7 +357,7 @@ describe('useIfcViewer', () => {
     expect(onSpatialStructure).not.toHaveBeenCalled()
     expect(api.getModelID()).toBeUndefined()
     expect(viewerMock.viewers[0].shadowDropper.renderShadow).not.toHaveBeenCalled()
-    expect(viewerMock.close).not.toHaveBeenCalled()
+    expect(viewerMock.close).toHaveBeenCalledTimes(1)
     expect(URL.revokeObjectURL).not.toHaveBeenCalled()
 
     uploaded.resolve({ modelID: 22, removeFromParent: vi.fn() })
@@ -347,10 +367,60 @@ describe('useIfcViewer', () => {
     expect(onModelReady).toHaveBeenCalledTimes(1)
     expect(onSpatialStructure).toHaveBeenCalledTimes(1)
     expect(viewerMock.viewers[1].shadowDropper.renderShadow).toHaveBeenCalledWith(22)
-    expect(viewerMock.close).toHaveBeenCalledTimes(1)
+    expect(viewerMock.close).toHaveBeenCalledTimes(2)
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1)
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:ifc')
     expect(onLoadStart).toHaveBeenCalledTimes(2)
+  })
+
+  it('updates the loading text from download and parse progress', async () => {
+    const pending = deferred<MockModel>()
+    viewerMock.state.loadModel = () => pending.promise
+    mountViewer()
+    await flushPromises()
+
+    const viewer = viewerMock.viewers[0]
+    expect(viewerMock.service).toHaveBeenCalledWith({ lock: true, text: 'Загрузка…' })
+    const onDownload = viewer.IFC.loadIfcUrl.mock.calls[0][2] as (event: ProgressEvent) => void
+    onDownload({ lengthComputable: false, loaded: 1, total: 0 } as ProgressEvent)
+    expect(viewerMock.setText).not.toHaveBeenCalled()
+    onDownload({ lengthComputable: true, loaded: 40, total: 100 } as ProgressEvent)
+    expect(viewerMock.setText).toHaveBeenLastCalledWith('Загрузка… 20%')
+
+    const onParse = viewer.IFC.loader.ifcManager.setOnProgress.mock.calls[0][0] as (event: {
+      loaded: number
+      total: number
+    }) => void
+    onParse({ loaded: 4, total: 10 })
+    expect(viewerMock.setText).toHaveBeenLastCalledWith('Загрузка… 70%')
+
+    pending.resolve({ modelID: 1, removeFromParent: vi.fn() })
+    await flushPromises()
+    expect(viewerMock.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('ignores progress from a load that was replaced', async () => {
+    const demo = deferred<MockModel>()
+    const uploaded = deferred<MockModel>()
+    const queue = [demo.promise, uploaded.promise]
+    viewerMock.state.loadModel = () => queue.shift() ?? Promise.resolve(viewerMock.state.model)
+    const { api } = mountViewer()
+    await flushPromises()
+    const staleDownload = viewerMock.viewers[0].IFC.loadIfcUrl.mock.calls[0][2] as (
+      event: ProgressEvent,
+    ) => void
+    api.file.value = fileInput('house.ifc')
+    const pending = api.handleFileUpload()
+    await flushPromises()
+    viewerMock.setText.mockClear()
+
+    staleDownload({ lengthComputable: true, loaded: 100, total: 100 } as ProgressEvent)
+    expect(viewerMock.setText).not.toHaveBeenCalled()
+
+    demo.resolve({ modelID: 11, removeFromParent: vi.fn() })
+    uploaded.resolve({ modelID: 22, removeFromParent: vi.fn() })
+    await pending
+    await flushPromises()
   })
 
   it('resets, resizes, and disposes the current viewer', async () => {

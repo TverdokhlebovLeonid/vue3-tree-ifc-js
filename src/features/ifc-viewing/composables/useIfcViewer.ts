@@ -8,9 +8,10 @@ import { isIfcFile } from '@/features/ifc-viewing/utils/isIfcFile'
 
 const DEMO_IFC_URL = '../ifc/demo.ifc'
 const WASM_PATH = '../wasm/'
+const LOADING_TEXT = 'Загрузка…'
 const OPTIONS_LOADING = {
   lock: true,
-  text: 'Loading',
+  text: LOADING_TEXT,
 }
 const MESSAGE_LOAD_FAILED = 'Не удалось открыть модель IFC.'
 
@@ -60,6 +61,27 @@ export const useIfcViewer = (options: UseIfcViewerOptions = {}) => {
     loadingIfc.value = undefined
   }
 
+  const openLoading = (): void => {
+    if (loadingIfc.value) {
+      loadingIfc.value.setText(LOADING_TEXT)
+      return
+    }
+    loadingIfc.value = ElLoading.service(OPTIONS_LOADING)
+  }
+
+  const reportProgress = (
+    id: number,
+    loaded: number,
+    total: number,
+    from: number,
+    to: number,
+  ): void => {
+    if (!isCurrentLoad(id) || !Number.isFinite(loaded) || !Number.isFinite(total) || total <= 0) return
+    const ratio = Math.min(Math.max(loaded / total, 0), 1)
+    const percent = Math.round(from + ratio * (to - from))
+    loadingIfc.value?.setText(`${LOADING_TEXT} ${percent}%`)
+  }
+
   const showLoadError = (): void => {
     ElMessage({
       showClose: true,
@@ -80,12 +102,23 @@ export const useIfcViewer = (options: UseIfcViewerOptions = {}) => {
     const viewer = ifcViewing.value
     try {
       if (!isCurrentLoad(id) || !viewer) return
+      openLoading()
       model.value = undefined
       scene.value = undefined
       options.onLoadStart?.()
+      viewer.IFC.loader.ifcManager.setOnProgress((event) => {
+        reportProgress(id, event.loaded, event.total, 50, 100)
+      })
       await viewer.IFC.setWasmPath(WASM_PATH)
       if (!isCurrentLoad(id)) return
-      const loaded: IFCModel | null | undefined = await viewer.IFC.loadIfcUrl(url, true)
+      const loaded: IFCModel | null | undefined = await viewer.IFC.loadIfcUrl(
+        url,
+        true,
+        (event) => {
+          if (!event.lengthComputable) return
+          reportProgress(id, event.loaded, event.total, 0, 50)
+        },
+      )
       if (!isCurrentLoad(id)) return
       const modelID = loaded?.modelID
       if (loaded == null || modelID == null) {
@@ -129,7 +162,7 @@ export const useIfcViewer = (options: UseIfcViewerOptions = {}) => {
     }
     const id = beginLoad()
     closeLoading()
-    loadingIfc.value = ElLoading.service(OPTIONS_LOADING)
+    openLoading()
     const objectUrl = URL.createObjectURL(fileIfc)
     resetFileInput()
     try {
