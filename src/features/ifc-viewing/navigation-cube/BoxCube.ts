@@ -6,7 +6,6 @@ import { NavCubeMaterial } from '@/features/ifc-viewing/navigation-cube/NavCubeM
 import type {
   IParameters,
   IMeshCube,
-  IOutLine,
   ISwitch,
   INameTextCube,
 } from '@/features/ifc-viewing/navigation-cube/interfaceNavCube'
@@ -96,11 +95,7 @@ export class BoxCube {
   initOutLine() {
     const geometry = new BoxGeometry(128, 128, 128)
     const edges = new EdgesGeometry(geometry)
-    const outLine: IOutLine = new LineSegments(edges, NavCubeMaterial.outLine)
-    outLine.textCube = 'OutLine'
-    outLine.userData.OutLine = true
-    outLine.userData.onScale = (scale: number) => outLine.scale.set(scale, scale, scale)
-    this.scene.add(outLine)
+    this.scene.add(new LineSegments(edges, NavCubeMaterial.outLine))
   }
 }
 

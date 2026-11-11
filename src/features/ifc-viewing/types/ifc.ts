@@ -1,8 +1,6 @@
-import { IfcViewerAPI } from 'web-ifc-viewer'
+import type { IfcViewerAPI } from 'web-ifc-viewer'
 
-export interface IIfcViewerAPI extends IfcViewerAPI {
-  container?: HTMLDivElement
-}
+export type IIfcViewerAPI = IfcViewerAPI
 
 export interface IDataLevelHide {
   customID: string

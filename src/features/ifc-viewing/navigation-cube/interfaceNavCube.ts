@@ -1,10 +1,4 @@
-import {
-  Mesh,
-  LineSegments,
-  Raycaster,
-  MeshBasicMaterial,
-  Object3D,
-} from 'three'
+import { Mesh, Raycaster } from 'three'
 import { Font } from '@/features/ifc-viewing/navigation-cube/FontLoader'
 import type { IfcCamera } from 'web-ifc-viewer/dist/components/context/camera/camera'
 import fontJSON from '@/features/ifc-viewing/navigation-cube/droid_sans_regular.typeface.json'
@@ -25,14 +19,6 @@ export interface IParameters {
 
 export type IRaycaster = Raycaster & {
   firstHitOnly?: boolean
-}
-
-export type IObject3D = Object3D & {
-  material?: MeshBasicMaterial
-}
-
-export interface IOutLine extends LineSegments {
-  textCube?: string
 }
 
 export type IMeshCube = Mesh & {

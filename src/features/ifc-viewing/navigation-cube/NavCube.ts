@@ -38,25 +38,22 @@ export class NavCube {
   mouse: Vector2
   mouseOn: boolean
   container: HTMLDivElement | null
-  isCanvasRemove: boolean
-  isKeyMove: boolean
-  htmlElementCube: string
+  isActive: boolean
   animationFrameId: number
   pickableMeshes: Object3D[]
   hoveredMesh: IMeshCube | null
   lastHoverKey: string
-  constructor(viewer: IIfcViewerAPI, htmlElementCube: string) {
+  constructor(viewer: IIfcViewerAPI, container: HTMLDivElement) {
     this.viewer = viewer
     this.scene = new Scene()
     this.width = 100
     this.height = 100
-    this.isCanvasRemove = true
-    this.htmlElementCube = htmlElementCube
-    this.container = document.querySelector(htmlElementCube)
+    this.isActive = true
+    this.container = container
     this.canvas = document.createElement('canvas')
     this.canvas.style.width = `${this.width}px`
     this.canvas.style.height = `${this.height}px`
-    if (this.container) this.container.appendChild(this.canvas)
+    this.container.appendChild(this.canvas)
     this.perspectiveCamera = new PerspectiveCamera(45, this.width / this.height, 1, 2000)
     const aspect = 0.9
     this.orthographicCamera = new OrthographicCamera(
@@ -90,7 +87,6 @@ export class NavCube {
     this.hoveredMesh = null
     this.lastHoverKey = ''
     this.mouseOn = false
-    this.isKeyMove = true
     this.animationFrameId = 0
     this.onAnimateIfcViewing()
     this.onHover()
@@ -142,10 +138,8 @@ export class NavCube {
   }
 
   onHover() {
-    if (this.isKeyMove) {
-      this.renderer.domElement.addEventListener('mousemove', this.onMouseMove)
-      this.renderer.domElement.addEventListener('mouseout', this.onMouseOut)
-    }
+    this.renderer.domElement.addEventListener('mousemove', this.onMouseMove)
+    this.renderer.domElement.addEventListener('mouseout', this.onMouseOut)
   }
 
   clearHover(): void {
@@ -201,31 +195,29 @@ export class NavCube {
 
     const controls = this.viewer.context.ifcCamera.cameraControls
     const r = this.camera.userData.Radius
-    if (this.isKeyMove) {
-      let vector = new Vector3(
-        camera.position.x - controls['_target'].x,
-        camera.position.y - controls['_target'].y,
-        camera.position.z - controls['_target'].z,
-      )
-      vector = vector.normalize()
-      const newV = new Vector3(0, 0, 0).add(vector.clone().multiplyScalar(r))
-      this.camera.position.x = newV.x
-      this.camera.position.y = newV.y
-      this.camera.position.z = newV.z
+    let vector = new Vector3(
+      camera.position.x - controls['_target'].x,
+      camera.position.y - controls['_target'].y,
+      camera.position.z - controls['_target'].z,
+    )
+    vector = vector.normalize()
+    const newV = new Vector3(0, 0, 0).add(vector.clone().multiplyScalar(r))
+    this.camera.position.x = newV.x
+    this.camera.position.y = newV.y
+    this.camera.position.z = newV.z
 
-      this.camera.rotation.x = camera.rotation.x
-      this.camera.rotation.y = camera.rotation.y
-      this.camera.rotation.z = camera.rotation.z
+    this.camera.rotation.x = camera.rotation.x
+    this.camera.rotation.y = camera.rotation.y
+    this.camera.rotation.z = camera.rotation.z
 
-      if (this.mouseOn) this.updateHover()
+    if (this.mouseOn) this.updateHover()
 
-      this.renderer.render(this.scene, this.camera)
-    }
+    this.renderer.render(this.scene, this.camera)
   }
 
   onAnimateIfcViewing() {
     const animate = () => {
-      if (!this.isCanvasRemove) return
+      if (!this.isActive) return
       this.animate()
       this.animationFrameId = requestAnimationFrame(animate)
     }
@@ -233,8 +225,8 @@ export class NavCube {
   }
 
   dispose() {
-    if (!this.isCanvasRemove) return
-    this.isCanvasRemove = false
+    if (!this.isActive) return
+    this.isActive = false
     cancelAnimationFrame(this.animationFrameId)
 
     this.renderer.domElement.removeEventListener('mousemove', this.onMouseMove)
@@ -251,9 +243,5 @@ export class NavCube {
     this.renderer.forceContextLoss()
     this.canvas.remove()
     this.container = null
-  }
-
-  deleteElement() {
-    this.dispose()
   }
 }

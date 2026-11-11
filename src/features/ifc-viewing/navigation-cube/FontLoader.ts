@@ -9,11 +9,9 @@ import type {
 export class Font {
   type: string
   data: IFontJSON
-  isFont: boolean
   constructor(data: IFontJSON) {
     this.type = 'Font'
     this.data = data
-    this.isFont = false
   }
 
   generateShapes(text: string, size = 100) {
@@ -105,5 +103,3 @@ function createPath(
 
   return { offsetX: (glyph.ha as number) * scale, path: path }
 }
-
-Font.prototype.isFont = true

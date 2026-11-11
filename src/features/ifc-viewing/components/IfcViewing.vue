@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onUnmounted, watch } from 'vue'
+import { nextTick, onUnmounted, ref, watch } from 'vue'
 import type { IDataLevelHide, IModelLevels } from '@/features/ifc-viewing/types/ifc'
 import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
 import { TEXT_HELP_PLANE } from '@/features/ifc-viewing/components/dataIfcViewing'
@@ -50,7 +50,8 @@ const subsets = useIfcSubsets({
 resetSubsets = subsets.resetSubsets
 setSpatialStructure = subsets.setSpatialStructure
 
-const navCube = useNavCube({ ifcViewing, model, container })
+const cube = ref<HTMLDivElement>()
+const navCube = useNavCube({ ifcViewing, model, cube })
 
 const {
   modelCoordinates,
@@ -147,7 +148,7 @@ onUnmounted(() => {
       @contextmenu.prevent="setRightChoice"
       @dblclick="setDoubleChoice"
     >
-      <div class="ifc-viewing__container_cube" />
+      <div ref="cube" class="ifc-viewing__container_cube" />
     </div>
   </div>
 </template>
