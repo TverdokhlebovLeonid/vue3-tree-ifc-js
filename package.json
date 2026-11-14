@@ -13,8 +13,7 @@
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
-    "test": "vitest",
-    "test-single": "vitest related __tests__/IfcViewingRequisites.test.ts"
+    "test": "vitest"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",

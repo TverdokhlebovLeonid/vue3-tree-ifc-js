@@ -28,7 +28,6 @@ export const mockSlot = {
 export const mockRoute = {
   path: '/',
   meta: {
-    path: 'Default',
     title: 'Просмотр IFC файлов - Vitest',
   },
 }

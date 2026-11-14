@@ -13,7 +13,7 @@ The app lets you load IFC files, visualize a building’s 3D model, browse its s
   - hiding and showing element groups
 - **Viewer tools:**
   - **Plane** — create a section plane with a double-click; remove it with a right-click
-  - **Coordinates** — read model point coordinates on click
+  - **Coordinates** — read model point coordinates as the pointer moves over the model
   - **Navigation cube** — quick camera orientation changes
   - **Full screen** — view the model in fullscreen mode
 - **Grid and axes** — scene references for easier navigation
@@ -87,12 +87,6 @@ npm run format
 
 ```sh
 npm run test
-```
-
-Run a single test suite (for example, `IfcViewingRequisites`):
-
-```sh
-npm run test-single
 ```
 
 ## Recommended IDE
