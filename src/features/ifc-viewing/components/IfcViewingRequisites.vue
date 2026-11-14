@@ -1,49 +1,57 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { IDataLevelHide, IModelElement, IModelLevels } from '@/features/ifc-viewing/types/ifc'
+import type { ILevelVisibility, IModelElement, IModelLevel } from '@/features/ifc-viewing/types/ifc'
 import { dictionaryIfcViewing, DEFAULT_KEY } from '@/features/ifc-viewing/components/dictionaryIfcViewing'
 import { collectHighlightIds } from '@/features/ifc-viewing/utils/spatialStructure'
 
 const props = defineProps<{
-  modelLevels: IModelLevels[]
+  modelLevels: IModelLevel[]
 }>()
 const levelActive = ref<number | null>(null)
+const shown = ref<Record<string, boolean>>({})
 
 watch(
   () => props.modelLevels,
-  () => {
+  (levels) => {
     levelActive.value = null
+    const next: Record<string, boolean> = {}
+    for (const level of levels) next[level.customID] = level.visible
+    shown.value = next
   },
+  { immediate: true },
 )
 
 const emits = defineEmits<{
-  (e: 'transfer-level', value: number[]): void
-  (e: 'level-hide', value: IDataLevelHide): void
+  (e: 'level-highlight', value: number[]): void
+  (e: 'level-visibility', value: ILevelVisibility): void
 }>()
 
 const containsExpressID = (nodes: IModelElement[] | undefined, id: number): boolean =>
   (nodes ?? []).some((node) => node.expressID === id || containsExpressID(node.children, id))
 
-const highlightIds = (element: IModelLevels | IModelElement): number[] =>
+const highlightIds = (element: IModelLevel | IModelElement): number[] =>
   'ids' in element && Array.isArray(element.ids) ? element.ids : collectHighlightIds(element)
 
-const transferLevel = (element: IModelLevels | IModelElement): void => {
+const isShown = (element: IModelLevel): boolean => shown.value[element.customID] ?? element.visible
+
+const setLevelHighlight = (element: IModelLevel | IModelElement): void => {
   if (levelActive.value === element.expressID) {
     levelActive.value = null
-    emits('transfer-level', [])
+    emits('level-highlight', [])
     return
   }
   levelActive.value = element.expressID
-  emits('transfer-level', highlightIds(element))
+  emits('level-highlight', highlightIds(element))
 }
 
-const setLevelHide = (element: IModelLevels, visible: boolean): void => {
-  emits('level-hide', { customID: element.customID, visible })
+const setLevelVisibility = (element: IModelLevel, visible: boolean): void => {
+  shown.value = { ...shown.value, [element.customID]: visible }
+  emits('level-visibility', { customID: element.customID, visible })
   if (visible || levelActive.value == null) return
   const activeID = levelActive.value
   if (activeID !== element.expressID && !containsExpressID(element.children, activeID)) return
   levelActive.value = null
-  emits('transfer-level', [])
+  emits('level-highlight', [])
 }
 
 const setElementName = (name: string): string => {
@@ -72,13 +80,13 @@ const PROPS_TREE = {
         <el-tooltip
           v-if="data?.customID"
           effect="dark"
-          :content="data.visible ? 'Удалить элемент' : 'Вернуть элемент'"
+          :content="isShown(data) ? 'Скрыть' : 'Показать'"
           placement="bottom"
         >
           <el-checkbox
-            v-model="data.visible"
+            :model-value="isShown(data)"
             size="large"
-            @change="setLevelHide(data, data.visible)"
+            @change="setLevelVisibility(data, $event === true)"
           />
         </el-tooltip>
         <el-tooltip
@@ -90,7 +98,7 @@ const PROPS_TREE = {
             type="button"
             class="ifc-requisites__label"
             :class="{ 'ifc-requisites__label_active': data.expressID === levelActive }"
-            @click="transferLevel(data)"
+            @click="setLevelHighlight(data)"
           >
             {{ setElementName(data?.type?.toString() || DEFAULT_KEY) }}
           </button>

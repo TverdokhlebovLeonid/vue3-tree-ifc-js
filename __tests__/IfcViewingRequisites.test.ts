@@ -1,12 +1,12 @@
 import { mount } from '@vue/test-utils'
 import IfcViewingRequisites from '@/features/ifc-viewing/components/IfcViewingRequisites.vue'
 import { mockModelLevels } from './dataMock'
-import type { IModelLevels } from '@/features/ifc-viewing/types/ifc'
+import type { IModelLevel } from '@/features/ifc-viewing/types/ifc'
 
 const levelLabel = (component: ReturnType<typeof mount>) =>
   component.find('.ifc-requisites__label')
 
-const mountWithModel = (model: IModelLevels[] = structuredClone(mockModelLevels)) =>
+const mountWithModel = (model: IModelLevel[] = structuredClone(mockModelLevels)) =>
   mount(IfcViewingRequisites, { props: { modelLevels: model } })
 
 describe('IfcViewingRequisites test component', () => {
@@ -43,11 +43,11 @@ describe('IfcViewingRequisites test component', () => {
     expect(label.element.tagName).toBe('BUTTON')
     expect(label.attributes('type')).toBe('button')
     await label.trigger('click')
-    expect(component.emitted('transfer-level')?.[0]).toEqual([[8800, 8862, 8928, 9100, 9101]])
+    expect(component.emitted('level-highlight')?.[0]).toEqual([[8800, 8862, 8928, 9100, 9101]])
     expect(component.find('.ifc-requisites__label_active').exists()).toBe(true)
 
     await label.trigger('click')
-    expect(component.emitted('transfer-level')?.[1]).toEqual([[]])
+    expect(component.emitted('level-highlight')?.[1]).toEqual([[]])
     expect(component.find('.ifc-requisites__label_active').exists()).toBe(false)
   })
 
@@ -59,11 +59,11 @@ describe('IfcViewingRequisites test component', () => {
         expressID: 63,
         type: 'IFCWALL',
         children: [],
-      } as unknown as IModelLevels,
+      } as unknown as IModelLevel,
     ])
     await component.vm.$nextTick()
     await levelLabel(component).trigger('click')
-    expect(component.emitted('transfer-level')?.[0]).toEqual([[63]])
+    expect(component.emitted('level-highlight')?.[0]).toEqual([[63]])
   })
 
   it('highlights nothing when the level subset has no ids', async () => {
@@ -73,7 +73,7 @@ describe('IfcViewingRequisites test component', () => {
     ])
     await component.vm.$nextTick()
     await levelLabel(component).trigger('click')
-    expect(component.emitted('transfer-level')?.[0]).toEqual([[]])
+    expect(component.emitted('level-highlight')?.[0]).toEqual([[]])
   })
 
   it('clears the highlight when the active level is hidden', async () => {
@@ -82,19 +82,30 @@ describe('IfcViewingRequisites test component', () => {
     await levelLabel(component).trigger('click')
     await component.get('input[type="checkbox"]').setValue(false)
 
-    expect(component.emitted('level-hide')?.[0]).toEqual([{ customID: '0-level', visible: false }])
-    expect(component.emitted('transfer-level')?.at(-1)).toEqual([[]])
+    expect(component.emitted('level-visibility')?.[0]).toEqual([
+      { customID: '0-level', visible: false },
+    ])
+    expect(component.emitted('level-highlight')?.at(-1)).toEqual([[]])
     expect(component.find('.ifc-requisites__label_active').exists()).toBe(false)
   })
 
-  it('emits visibility when the checkbox changes', async () => {
-    const component = mountWithModel()
+  it('emits visibility without changing the tree prop', async () => {
+    const model = structuredClone(mockModelLevels)
+    const component = mountWithModel(model)
     await component.vm.$nextTick()
+    expect(component.findComponent({ name: 'ElTooltip' }).props('content')).toBe('Скрыть')
+
     await component.get('input[type="checkbox"]').setValue(false)
-    expect(component.emitted('level-hide')?.[0]).toEqual([{ customID: '0-level', visible: false }])
+    expect(model[0].visible).toBe(true)
+    expect(component.find('.el-checkbox').classes()).not.toContain('is-checked')
+    expect(component.findComponent({ name: 'ElTooltip' }).props('content')).toBe('Показать')
+    expect(component.emitted('level-visibility')?.[0]).toEqual([
+      { customID: '0-level', visible: false },
+    ])
 
     await component.get('input[type="checkbox"]').setValue(true)
-    expect(component.emitted('level-hide')?.[1]).toEqual([{ customID: '0-level', visible: true }])
-    expect(component.emitted('transfer-level')).toBeUndefined()
+    expect(component.find('.el-checkbox').classes()).toContain('is-checked')
+    expect(component.emitted('level-visibility')?.[1]).toEqual([{ customID: '0-level', visible: true }])
+    expect(component.emitted('level-highlight')).toBeUndefined()
   })
 })

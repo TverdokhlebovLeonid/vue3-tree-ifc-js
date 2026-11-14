@@ -2,10 +2,10 @@ import { ref } from 'vue'
 import type { ShallowRef } from 'vue'
 import type { Scene } from 'three'
 import type {
-  IDataLevelHide,
+  ILevelVisibility,
   IIfcViewerAPI,
   IModelElement,
-  IModelLevels,
+  IModelLevel,
 } from '@/features/ifc-viewing/types/ifc'
 import {
   collectSpatialLevels,
@@ -16,11 +16,11 @@ type UseIfcSubsetsOptions = {
   ifcViewing: ShallowRef<IIfcViewerAPI | undefined>
   scene: ShallowRef<Scene | undefined>
   getModelID: () => number | undefined
-  onLevels: (levels: IModelLevels[]) => void
+  onLevels: (levels: IModelLevel[]) => void
 }
 
 export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
-  const modelLevels = ref<IModelLevels[]>([])
+  const modelLevels = ref<IModelLevel[]>([])
 
   const resetSubsets = (): void => {
     modelLevels.value = []
@@ -46,7 +46,7 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
   }
 
   const setModelLevels = (elements: IModelElement[]): void => {
-    const nextLevels: IModelLevels[] = []
+    const nextLevels: IModelLevel[] = []
     for (const [index, element] of elements.entries()) {
       if (!('children' in element)) continue
       const ids = collectSubsetIds(element)
@@ -84,7 +84,7 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
     newSubsetOfType(level.ids, customID)
   }
 
-  const setLevelHide = (data: IDataLevelHide): void => {
+  const setLevelVisibility = (data: ILevelVisibility): void => {
     if (data.visible) {
       addHide(data.customID)
       return
@@ -106,7 +106,7 @@ export const useIfcSubsets = (options: UseIfcSubsetsOptions) => {
   return {
     resetSubsets,
     setSpatialStructure,
-    setLevelHide,
+    setLevelVisibility,
     highlightModelLevel,
   }
 }

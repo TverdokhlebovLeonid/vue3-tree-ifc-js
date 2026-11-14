@@ -2,7 +2,7 @@ import type { IfcViewerAPI } from 'web-ifc-viewer'
 
 export type IIfcViewerAPI = IfcViewerAPI
 
-export interface IDataLevelHide {
+export interface ILevelVisibility {
   customID: string
   visible: boolean
 }
@@ -13,7 +13,7 @@ export interface IModelElement {
   children: IModelElement[]
 }
 
-export interface IModelLevels {
+export interface IModelLevel {
   ids: number[]
   visible: boolean
   customID: string

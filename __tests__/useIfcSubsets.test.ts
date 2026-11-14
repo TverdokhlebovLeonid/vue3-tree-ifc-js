@@ -122,7 +122,7 @@ describe('useIfcSubsets', () => {
   it('does not create meshes without a model id', async () => {
     const harness = createHarness(null)
     await harness.subsets.setSpatialStructure()
-    harness.subsets.setLevelHide({ customID: '0-level', visible: false })
+    harness.subsets.setLevelVisibility({ customID: '0-level', visible: false })
     harness.subsets.highlightModelLevel([100])
 
     expect(harness.getSpatialStructure).not.toHaveBeenCalled()
@@ -135,10 +135,10 @@ describe('useIfcSubsets', () => {
   it('removes a hidden level and recreates it when shown again', async () => {
     const harness = createHarness()
     await harness.subsets.setSpatialStructure()
-    harness.subsets.setLevelHide({ customID: '0-level', visible: false })
+    harness.subsets.setLevelVisibility({ customID: '0-level', visible: false })
     expect(harness.removeSubset).toHaveBeenCalledWith(7, undefined, '0-level')
 
-    harness.subsets.setLevelHide({ customID: '0-level', visible: true })
+    harness.subsets.setLevelVisibility({ customID: '0-level', visible: true })
     await flushPromises()
     expect(harness.removeSubset).toHaveBeenCalledTimes(2)
     expect(harness.createSubset).toHaveBeenLastCalledWith(
@@ -150,7 +150,7 @@ describe('useIfcSubsets', () => {
     const harness = createHarness()
     await harness.subsets.setSpatialStructure()
     harness.subsets.resetSubsets()
-    harness.subsets.setLevelHide({ customID: '0-level', visible: true })
+    harness.subsets.setLevelVisibility({ customID: '0-level', visible: true })
     await flushPromises()
 
     expect(harness.createSubset).toHaveBeenCalledTimes(2)

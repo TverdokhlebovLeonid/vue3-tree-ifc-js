@@ -4,12 +4,12 @@ import IfcViewing from '@/features/ifc-viewing/components/IfcViewing.vue'
 import IfcViewingTools from '@/features/ifc-viewing/components/IfcViewingTools.vue'
 import IfcViewingRequisites from '@/features/ifc-viewing/components/IfcViewingRequisites.vue'
 import { useFullscreen } from '@/features/ifc-viewing/composables/useFullscreen'
-import type { IModelLevels, IDataLevelHide } from '@/features/ifc-viewing/types/ifc'
+import type { IModelLevel, ILevelVisibility } from '@/features/ifc-viewing/types/ifc'
 
 const activeTool = ref('')
-const modelLevels = ref<IModelLevels[]>([])
+const modelLevels = ref<IModelLevel[]>([])
 const levelHighlight = ref<number[] | null>(null)
-const levelVisibility = ref<IDataLevelHide | null>(null)
+const levelVisibility = ref<ILevelVisibility[]>([])
 const toolCommand = ref<{ key: number; name: string } | null>(null)
 let toolCommandKey = 0
 const { isFullscreen, toggle: openFullscreen, close: closeButtonFullscreen } = useFullscreen()
@@ -18,14 +18,15 @@ const onToolSelection = (tool: string): void => {
   toolCommandKey += 1
   toolCommand.value = { key: toolCommandKey, name: tool }
 }
-const onTransferLevel = (level: number[]): void => {
+const onLevelHighlight = (level: number[]): void => {
   levelHighlight.value = level
 }
-const onLevelHide = (data: IDataLevelHide): void => {
-  levelVisibility.value = data
+const onLevelVisibility = (data: ILevelVisibility): void => {
+  levelVisibility.value = [...levelVisibility.value, data]
 }
-const onSetModel = (model: IModelLevels[]): void => {
+const onSetModel = (model: IModelLevel[]): void => {
   modelLevels.value = model
+  levelVisibility.value = []
 }
 </script>
 
@@ -51,8 +52,8 @@ const onSetModel = (model: IModelLevels[]): void => {
       <IfcViewingRequisites
         v-show="!isFullscreen"
         :model-levels="modelLevels"
-        @transfer-level="onTransferLevel"
-        @level-hide="onLevelHide"
+        @level-highlight="onLevelHighlight"
+        @level-visibility="onLevelVisibility"
       />
       <el-button
         v-if="isFullscreen"

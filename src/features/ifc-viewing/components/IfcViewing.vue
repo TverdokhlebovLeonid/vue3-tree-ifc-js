@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onUnmounted, ref, watch } from 'vue'
-import type { IDataLevelHide, IModelLevels } from '@/features/ifc-viewing/types/ifc'
+import type { ILevelVisibility, IModelLevel } from '@/features/ifc-viewing/types/ifc'
 import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
 import { TEXT_HELP_PLANE } from '@/features/ifc-viewing/components/dataIfcViewing'
 import { useIfcViewer } from '@/features/ifc-viewing/composables/useIfcViewer'
@@ -12,11 +12,11 @@ const props = defineProps<{
   isFullscreen: boolean
   toolCommand: { key: number; name: string } | null
   levelHighlight: number[] | null
-  levelVisibility: IDataLevelHide | null
+  levelVisibility: ILevelVisibility[]
 }>()
 const activeTool = defineModel<string>('activeTool', { default: '' })
 const emits = defineEmits<{
-  (e: 'set-model', value: IModelLevels[]): void
+  (e: 'set-model', value: IModelLevel[]): void
 }>()
 
 let resetSubsets = (): void => undefined
@@ -45,7 +45,7 @@ const subsets = useIfcSubsets({
   ifcViewing,
   scene,
   getModelID,
-  onLevels: (levels: IModelLevels[]) => emits('set-model', levels),
+  onLevels: (levels: IModelLevel[]) => emits('set-model', levels),
 })
 resetSubsets = subsets.resetSubsets
 setSpatialStructure = subsets.setSpatialStructure
@@ -68,7 +68,7 @@ const {
 resetActiveTool = () => toolSelection('')
 
 const highlightModelLevel = subsets.highlightModelLevel
-const setLevelHide = subsets.setLevelHide
+const setLevelVisibility = subsets.setLevelVisibility
 
 watch(
   () => props.toolCommand,
@@ -84,11 +84,13 @@ watch(
     highlightModelLevel(level)
   },
 )
+let appliedVisibility = 0
 watch(
   () => props.levelVisibility,
-  (level) => {
-    if (!level) return
-    setLevelHide(level)
+  (commands) => {
+    const start = commands.length < appliedVisibility ? 0 : appliedVisibility
+    for (const command of commands.slice(start)) setLevelVisibility(command)
+    appliedVisibility = commands.length
   },
 )
 watch(
