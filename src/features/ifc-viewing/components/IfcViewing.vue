@@ -2,7 +2,7 @@
 import { nextTick, onUnmounted, ref, watch } from 'vue'
 import type { ILevelVisibility, IModelLevel } from '@/features/ifc-viewing/types/ifc'
 import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
-import { TEXT_HELP_PLANE } from '@/features/ifc-viewing/components/dataIfcViewing'
+import { TEXT_HELP_PLANE } from '@/features/ifc-viewing/constants/dataIfcViewing'
 import { useIfcViewer } from '@/features/ifc-viewing/composables/useIfcViewer'
 import { useIfcSubsets } from '@/features/ifc-viewing/composables/useIfcSubsets'
 import { useIfcTools } from '@/features/ifc-viewing/composables/useIfcTools'

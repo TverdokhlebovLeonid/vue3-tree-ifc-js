@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { reactive, computed, watch, onUnmounted } from 'vue'
-import { TOOLS } from '@/features/ifc-viewing/components/dataIfcViewing'
-import type { ITools } from '@/features/ifc-viewing/types/tools'
+import { computed } from 'vue'
+import { TOOLS } from '@/features/ifc-viewing/constants/dataIfcViewing'
 import { IFC_VIEWING_TOOLS } from '@/features/ifc-viewing/constants/ifcViewingTools'
 
 const props = withDefaults(
@@ -15,25 +14,13 @@ const emits = defineEmits<{
   (e: 'tool-selection', value: string): void
 }>()
 
-const toolsButton = reactive<ITools[]>(TOOLS)
 const isCancelAction = computed((): boolean => props.activeTool === IFC_VIEWING_TOOLS.createPlane)
 
-watch(
-  () => props.activeTool,
-  (tool) => {
-    toolsButton.forEach((el) => {
-      el.active = el.tool === tool
-    })
-  },
-  { immediate: true },
-)
+const isActive = (tool: string): boolean => props.activeTool === tool
 
-const startStateTools = (): void => {
-  emits('tool-selection', '')
-}
 const setTools = (tool: string): void => {
   if (tool === props.activeTool) {
-    startStateTools()
+    emits('tool-selection', '')
     return
   }
   if (tool === IFC_VIEWING_TOOLS.fullScreen) {
@@ -46,15 +33,6 @@ const setTools = (tool: string): void => {
 const cancelTool = (): void => {
   emits('tool-selection', IFC_VIEWING_TOOLS.cancelPlane)
 }
-
-const setFullScreen = (): void => {
-  emits('open-fullscreen')
-}
-
-defineExpose({ startStateTools, setTools, cancelTool, setFullScreen })
-onUnmounted(() => {
-  startStateTools()
-})
 </script>
 
 <template>
@@ -72,15 +50,15 @@ onUnmounted(() => {
       </el-tooltip>
     </div>
     <div class="ifc-tools__buttons">
-      <template v-for="tool in toolsButton" :key="tool.icon">
+      <template v-for="tool in TOOLS" :key="tool.tool">
         <el-tooltip
           effect="dark"
-          :content="tool.active ? 'Отключить инструмент' : tool.popover"
+          :content="isActive(tool.tool) ? 'Отключить инструмент' : tool.popover"
           placement="bottom"
         >
           <el-button
             type="primary"
-            :class="{ 'ifc-tools__buttons_active': tool.active }"
+            :class="{ 'ifc-tools__buttons_active': isActive(tool.tool) }"
             plain
             size="small"
             :icon="tool.icon"

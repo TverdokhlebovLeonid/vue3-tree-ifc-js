@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { ILevelVisibility, IModelElement, IModelLevel } from '@/features/ifc-viewing/types/ifc'
-import { dictionaryIfcViewing, DEFAULT_KEY } from '@/features/ifc-viewing/components/dictionaryIfcViewing'
+import { dictionaryIfcViewing, DEFAULT_KEY } from '@/features/ifc-viewing/constants/dictionaryIfcViewing'
 import { collectHighlightIds } from '@/features/ifc-viewing/utils/spatialStructure'
 
 const props = defineProps<{

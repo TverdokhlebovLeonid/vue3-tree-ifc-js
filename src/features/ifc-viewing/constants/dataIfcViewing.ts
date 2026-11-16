@@ -3,28 +3,24 @@ import type { ITools } from '@/features/ifc-viewing/types/tools'
 
 export const TOOLS: ITools[] = [
   {
-    active: false,
     icon: 'Coin',
     popover: 'Разрезать на плоскости',
     name: 'Плоскость',
     tool: IFC_VIEWING_TOOLS.createPlane,
   },
   {
-    active: false,
     icon: 'Coordinate',
     popover: 'Координаты модели',
     name: 'Координаты',
     tool: IFC_VIEWING_TOOLS.createCoordinates,
   },
   {
-    active: false,
     icon: 'Box',
     popover: 'Навигационный куб',
     name: 'Куб',
     tool: IFC_VIEWING_TOOLS.navCube,
   },
   {
-    active: false,
     icon: 'FullScreen',
     popover: 'Раскрыть на весь экран',
     name: 'Во весь экран',
